@@ -1,0 +1,277 @@
+{
+  "loud": {
+    "logo": "//owcdn.net/img/62bbec8dc1b9f.png",
+    "players": [
+      {
+        "alias": "erde",
+        "real": "Roberto Lobos",
+        "image": "/img/base/ph/sil.png"
+      },
+      {
+        "alias": "lukxo",
+        "real": "Lucca Travaioli",
+        "image": "//owcdn.net/img/69e023fe3a5b8.png"
+      },
+      {
+        "alias": "DaviH",
+        "real": "David Cruz",
+        "image": "//owcdn.net/img/69a8be6cb643d.png"
+      },
+      {
+        "alias": "Darker",
+        "real": "Sebastián Castro Cicuamia",
+        "image": "//owcdn.net/img/69e02450abf75.png"
+      },
+      {
+        "alias": "tkzin",
+        "real": "Enzo Zimiani",
+        "image": "//owcdn.net/img/69e655026b8a8.png"
+      }
+    ]
+  },
+  "100t": {
+    "logo": "//owcdn.net/img/603c00d5c5a08.png",
+    "players": [
+      {
+        "alias": "vora",
+        "real": "Jordan Pulwer",
+        "image": "//owcdn.net/img/69704e204d563.png"
+      },
+      {
+        "alias": "Cryocells",
+        "real": "Matthew Panganiban",
+        "image": "//owcdn.net/img/69704e38872a4.png"
+      },
+      {
+        "alias": "Asuna",
+        "real": "Peter Mazuryk",
+        "image": "//owcdn.net/img/69704e530cfac.png"
+      },
+      {
+        "alias": "Timotino",
+        "real": "Timothée Lavigne Dupont",
+        "image": "//owcdn.net/img/69704e811ce7c.png"
+      },
+      {
+        "alias": "bang",
+        "real": "Sean Bezerra",
+        "image": "//owcdn.net/img/69704e67e3e2b.png"
+      }
+    ]
+  },
+  "lev": {
+    "logo": "//owcdn.net/img/61b8888cc3860.png",
+    "players": [
+      {
+        "alias": "kiNgg",
+        "real": "Francisco Aravena",
+        "image": "//owcdn.net/img/69234b213a609.png"
+      },
+      {
+        "alias": "spike",
+        "real": "Rodrigo Lombardi",
+        "image": "//owcdn.net/img/69234b7d30781.png"
+      },
+      {
+        "alias": "blowz",
+        "real": "Guilherme Oliviera",
+        "image": "//owcdn.net/img/69234aef86f4b.png"
+      },
+      {
+        "alias": "Neon",
+        "real": "Bruno Rodríguez",
+        "image": "//owcdn.net/img/69234b3d0a58d.png"
+      },
+      {
+        "alias": "Sato",
+        "real": "Eduardo Kenzo Nagahama Sato",
+        "image": "//owcdn.net/img/69234b72ce3db.png"
+      }
+    ]
+  },
+  "nrg": {
+    "logo": "//owcdn.net/img/6610f026c1a9e.png",
+    "players": [
+      {
+        "alias": "Ethan",
+        "real": "Ethan Arnold",
+        "image": "//owcdn.net/img/6974068bad561.png"
+      },
+      {
+        "alias": "keiko",
+        "real": "Georgio Sanassy",
+        "image": "//owcdn.net/img/697406c5ecbcd.png"
+      },
+      {
+        "alias": "brawk",
+        "real": "Brock Somerhalder",
+        "image": "//owcdn.net/img/697426e1f3308.png"
+      },
+      {
+        "alias": "mada",
+        "real": "Adam Pampuch",
+        "image": "//owcdn.net/img/697406cf6b086.png"
+      },
+      {
+        "alias": "skuba",
+        "real": "Logan Jenkins",
+        "image": "//owcdn.net/img/6974067806f34.png"
+      }
+    ]
+  },
+  "prx": {
+    "logo": "//owcdn.net/img/62bbeba74d5cb.png",
+    "players": [
+      {
+        "alias": "invy",
+        "real": "Adrian Jiggs Reyes",
+        "image": "//owcdn.net/img/69735f4a21e3b.png"
+      },
+      {
+        "alias": "Jinggg",
+        "real": "Wang Jing Jie",
+        "image": "//owcdn.net/img/69735f0889a6b.png"
+      },
+      {
+        "alias": "f0rsakeN",
+        "real": "Jason Susanto",
+        "image": "//owcdn.net/img/69735f135cf21.png"
+      },
+      {
+        "alias": "d4v41",
+        "real": "Khalish Rusyaidee",
+        "image": "//owcdn.net/img/69735f207c9bf.png"
+      },
+      {
+        "alias": "something",
+        "real": "Ilya Petrov",
+        "image": "//owcdn.net/img/69735f396861f.png"
+      }
+    ]
+  },
+  "tl": {
+    "logo": "//owcdn.net/img/640c381f0603f.png",
+    "players": [
+      {
+        "alias": "nAts",
+        "real": "Ayaz Akhmetshin",
+        "image": "//owcdn.net/img/69735612b9b30.png"
+      },
+      {
+        "alias": "GSR",
+        "real": "Ognjen Bondžić",
+        "image": "/img/base/ph/sil.png"
+      },
+      {
+        "alias": "kamo",
+        "real": "Kamil Frąckowiak",
+        "image": "//owcdn.net/img/697355a36ffa7.png"
+      },
+      {
+        "alias": "trexx",
+        "real": "Nikita Cherednichenko",
+        "image": "//owcdn.net/img/67ab62d450b3c.png"
+      },
+      {
+        "alias": "Kicks",
+        "real": "Kimmie Laasner",
+        "image": "//owcdn.net/img/677d6506baa65.png"
+      },
+      {
+        "alias": "wayne",
+        "real": "Wayne Chang",
+        "image": "//owcdn.net/img/6980b5b5e4e7a.png"
+      },
+      {
+        "alias": "MiniBoo",
+        "real": "Dominykas Lukaševičius",
+        "image": "//owcdn.net/img/697356d4e6f01.png"
+      },
+      {
+        "alias": "purp0",
+        "real": "Semyon Borchev",
+        "image": "//owcdn.net/img/6973563baf5bc.png"
+      }
+    ]
+  },
+  "kc": {
+    "logo": "//owcdn.net/img/627403a0d9e48.png",
+    "players": [
+      {
+        "alias": "Avez",
+        "real": "Hazem Khaled",
+        "image": "//owcdn.net/img/63e4aecb51963.png"
+      },
+      {
+        "alias": "dos9",
+        "real": "Zhumagali Dastan",
+        "image": "//owcdn.net/img/69e903fd4c11a.png"
+      },
+      {
+        "alias": "LewN",
+        "real": "Burak Alkan",
+        "image": "//owcdn.net/img/680a9297edd81.png"
+      },
+      {
+        "alias": "SUYGETSU",
+        "real": "Dmitry Ilyushin",
+        "image": "//owcdn.net/img/642eabfbd9478.png"
+      },
+      {
+        "alias": "N4RRATE",
+        "real": "Marshall Massey",
+        "image": "//owcdn.net/img/6974146682328.png"
+      },
+      {
+        "alias": "Chaza",
+        "real": "Charlie Phillips",
+        "image": "/img/base/ph/sil.png"
+      },
+      {
+        "alias": "sheydos",
+        "real": "Bogdan Naumov",
+        "image": "//owcdn.net/img/65e74c694b17e.png"
+      }
+    ]
+  },
+  "edg": {
+    "logo": "//owcdn.net/img/62c82049253b2.png",
+    "players": [
+      {
+        "alias": "nobody",
+        "real": "Wang Senxu (王森旭)",
+        "image": "//owcdn.net/img/677fe4210de6e.png"
+      },
+      {
+        "alias": "ZmjjKK",
+        "real": "Zheng Yongkang (郑永康)",
+        "image": "//owcdn.net/img/677fe40edf9da.png"
+      },
+      {
+        "alias": "CHICHOO",
+        "real": "Wan Shunzhi (万顺治)",
+        "image": "//owcdn.net/img/677fe4289bb34.png"
+      },
+      {
+        "alias": "Smoggy",
+        "real": "Zhang Zhao (张钊)",
+        "image": "//owcdn.net/img/677fe435edc57.png"
+      },
+      {
+        "alias": "Jieni7",
+        "real": "Zhang Juntai (张君泰)",
+        "image": "//owcdn.net/img/67e2e8846d5a5.png"
+      },
+      {
+        "alias": "stew",
+        "real": "Park Young-chan (박영찬)",
+        "image": "//owcdn.net/img/6780d408e3835.png"
+      },
+      {
+        "alias": "zjc",
+        "real": "Zhang Juncheng (张峻程)",
+        "image": "//owcdn.net/img/6892da154edc5.png"
+      }
+    ]
+  }
+}

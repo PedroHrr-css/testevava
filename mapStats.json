@@ -1,0 +1,93 @@
+{
+  "loud": {
+    "sample": 16,
+    "maps": {
+      "Summit": 5,
+      "Ascent": 2,
+      "Lotus": 2,
+      "Sunset": 2,
+      "Haven": 2,
+      "Abyss": 2,
+      "Split": 1
+    }
+  },
+  "100t": {
+    "sample": 13,
+    "maps": {
+      "Summit": 3,
+      "Split": 2,
+      "Lotus": 2,
+      "Ascent": 2,
+      "Sunset": 2,
+      "Haven": 1,
+      "Abyss": 1
+    }
+  },
+  "lev": {
+    "sample": 12,
+    "maps": {
+      "Summit": 3,
+      "Split": 2,
+      "Abyss": 2,
+      "Haven": 2,
+      "Sunset": 2,
+      "Lotus": 1
+    }
+  },
+  "nrg": {
+    "sample": 15,
+    "maps": {
+      "Lotus": 3,
+      "Abyss": 3,
+      "Ascent": 2,
+      "Summit": 2,
+      "Haven": 2,
+      "Sunset": 2,
+      "Split": 1
+    }
+  },
+  "prx": {
+    "sample": 13,
+    "maps": {
+      "Split": 3,
+      "Lotus": 3,
+      "Haven": 2,
+      "Ascent": 2,
+      "Abyss": 2,
+      "Sunset": 1
+    }
+  },
+  "tl": {
+    "sample": 15,
+    "maps": {
+      "Lotus": 5,
+      "Ascent": 3,
+      "Split": 2,
+      "Summit": 2,
+      "Haven": 2,
+      "Sunset": 1
+    }
+  },
+  "kc": {
+    "sample": 14,
+    "maps": {
+      "Haven": 3,
+      "Lotus": 3,
+      "Ascent": 2,
+      "Summit": 2,
+      "Sunset": 2,
+      "Abyss": 2
+    }
+  },
+  "edg": {
+    "sample": 12,
+    "maps": {
+      "Summit": 3,
+      "Sunset": 2,
+      "Lotus": 2,
+      "Haven": 2,
+      "Ascent": 2,
+      "Breeze": 1
+    }
+  }
+}

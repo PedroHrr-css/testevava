@@ -1,0 +1,147 @@
+[
+  {
+    "id": "astra",
+    "name": "Astra",
+    "role": "Controlador"
+  },
+  {
+    "id": "breach",
+    "name": "Breach",
+    "role": "Iniciador"
+  },
+  {
+    "id": "brimstone",
+    "name": "Brimstone",
+    "role": "Controlador"
+  },
+  {
+    "id": "chamber",
+    "name": "Chamber",
+    "role": "Sentinela"
+  },
+  {
+    "id": "clove",
+    "name": "Clove",
+    "role": "Controlador"
+  },
+  {
+    "id": "cypher",
+    "name": "Cypher",
+    "role": "Sentinela"
+  },
+  {
+    "id": "deadlock",
+    "name": "Deadlock",
+    "role": "Sentinela"
+  },
+  {
+    "id": "fade",
+    "name": "Fade",
+    "role": "Iniciador"
+  },
+  {
+    "id": "gekko",
+    "name": "Gekko",
+    "role": "Iniciador"
+  },
+  {
+    "id": "harbor",
+    "name": "Harbor",
+    "role": "Controlador"
+  },
+  {
+    "id": "iso",
+    "name": "Iso",
+    "role": "Duelista"
+  },
+  {
+    "id": "jett",
+    "name": "Jett",
+    "role": "Duelista"
+  },
+  {
+    "id": "kay-o",
+    "name": "KAY/O",
+    "role": "Iniciador"
+  },
+  {
+    "id": "killjoy",
+    "name": "Killjoy",
+    "role": "Sentinela"
+  },
+  {
+    "id": "miks",
+    "name": "Miks",
+    "role": "Controlador"
+  },
+  {
+    "id": "neon",
+    "name": "Neon",
+    "role": "Duelista"
+  },
+  {
+    "id": "omen",
+    "name": "Omen",
+    "role": "Controlador"
+  },
+  {
+    "id": "phoenix",
+    "name": "Phoenix",
+    "role": "Duelista"
+  },
+  {
+    "id": "raze",
+    "name": "Raze",
+    "role": "Duelista"
+  },
+  {
+    "id": "reyna",
+    "name": "Reyna",
+    "role": "Duelista"
+  },
+  {
+    "id": "sage",
+    "name": "Sage",
+    "role": "Sentinela"
+  },
+  {
+    "id": "skye",
+    "name": "Skye",
+    "role": "Iniciador"
+  },
+  {
+    "id": "sova",
+    "name": "Sova",
+    "role": "Iniciador"
+  },
+  {
+    "id": "tejo",
+    "name": "Tejo",
+    "role": "Iniciador"
+  },
+  {
+    "id": "veto",
+    "name": "Veto",
+    "role": "Sentinela"
+  },
+  {
+    "id": "viper",
+    "name": "Viper",
+    "role": "Controlador"
+  },
+  {
+    "id": "vyse",
+    "name": "Vyse",
+    "role": "Sentinela"
+  },
+  {
+    "id": "waylay",
+    "name": "Waylay",
+    "role": "Duelista"
+  },
+  {
+    "id": "yoru",
+    "name": "Yoru",
+    "role": "Duelista"
+  }
+]
