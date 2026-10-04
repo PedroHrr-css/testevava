@@ -1,0 +1,126 @@
+.sim-canvas canvas {
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+}
+
+.sim-camera-tools {
+  gap: 8px;
+  padding: 10px;
+  background: #09151df2;
+  backdrop-filter: blur(8px);
+}
+
+.sim-camera-tools > label { font-size: 8px; letter-spacing: 1px; }
+.sim-camera-tools select { max-width: 165px; letter-spacing: 0; }
+.sim-player-switch, .sim-camera-orbit { display: flex; gap: 3px; }
+.sim-player-switch button, .sim-camera-orbit button { min-width: 32px; padding: 6px 8px; font-size: 18px; }
+.sim-camera-tools button:disabled, .sim-camera-tools select:disabled { opacity: .4; cursor: wait; }
+.sim-camera-label { flex-basis: 100%; margin: 2px 0 0; font-size: 8px; color: #84def0; }
+
+.sim-player-card {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 7;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 180px;
+  padding: 10px 14px 10px 10px;
+  border: 1px solid #6dc3d755;
+  border-left: 3px solid #8ae9ff;
+  border-radius: 8px;
+  background: #09151de8;
+  pointer-events: none;
+}
+
+.sim-player-card[hidden] { display: none; }
+.sim-player-card img { width: 42px; height: 42px; object-fit: contain; }
+.sim-player-card small, .sim-player-card span { display: block; font-size: 8px; letter-spacing: 1px; }
+.sim-player-card small { margin-bottom: 4px; color: #8ae9ff; }
+.sim-player-card b { font-size: 18px; }
+.sim-player-card span { margin-top: 4px; color: #9cb4c1; }
+.sim-player-card[data-dead="true"] { border-color: #ff596577; }
+.sim-player-card[data-dead="true"] small { color: #ff8b95; }
+
+.sim-reticle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 6;
+  display: none;
+  width: 20px;
+  height: 20px;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.sim-map[data-camera-mode="player"] .sim-reticle { display: block; }
+.sim-map[data-player-dead="true"] .sim-reticle { display: none; }
+.sim-reticle i { position: absolute; background: #c3faff; box-shadow: 0 0 2px #000; }
+.sim-reticle i:first-child { top: 9px; left: 0; width: 20px; height: 2px; }
+.sim-reticle i:last-child { top: 0; left: 9px; width: 2px; height: 20px; }
+
+.sim-minimap {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 7;
+  width: 130px;
+  padding: 6px;
+  border: 1px solid #4c7486;
+  border-radius: 8px;
+  background: #09151de8;
+  pointer-events: none;
+}
+
+.sim-map[data-camera-mode="tactical"] .sim-minimap { display: none; }
+.sim-minimap-plan { position: relative; aspect-ratio: 1; }
+.sim-minimap img { display: block; width: 100%; height: 100%; opacity: .8; }
+.sim-minimap i { position: absolute; width: 4px; height: 4px; border-radius: 50%; background: var(--side); transform: translate(-50%, -50%); }
+.sim-minimap i.selected { width: 6px; height: 6px; box-shadow: 0 0 0 2px #8ae9ff; }
+.sim-minimap small { display: block; margin-top: 5px; text-align: center; font-size: 8px; letter-spacing: 1px; color: #c2d8e2; }
+
+@media (max-width: 800px) {
+  .sim-map { height: min(65dvh, 520px); min-height: 390px; aspect-ratio: auto; }
+  .sim-camera-tools { gap: 6px; }
+  .sim-camera-label { display: block; }
+  .sim-player-card { top: 9px; left: 9px; padding: 7px; gap: 7px; min-width: 0; }
+  .sim-player-card img { width: 32px; height: 32px; }
+  .sim-player-card b { font-size: 14px; }
+  .sim-player-card small, .sim-player-card span { font-size: 6px; letter-spacing: .5px; }
+  .sim-minimap { top: 9px; right: 9px; width: 85px; padding: 4px; }
+  .sim-minimap small { font-size: 6px; }
+}
+
+@media (max-width: 450px) {
+  .sim-camera-tools select { max-width: 125px; padding: 8px 6px; font-size: 9px; }
+  .sim-player-switch button, .sim-camera-orbit button { min-width: 27px; padding: 4px 6px; font-size: 16px; }
+  .sim-camera-tools input { width: 80px; }
+}
+
+/* Broadcast HUD */
+.match-viewer { border: 1px solid #486579; border-radius: 18px; overflow: hidden; box-shadow: 0 28px 100px #0009; background: linear-gradient(145deg,#142330,#09131e); }
+.match-header { background: linear-gradient(110deg,#20384b,#101d2b); border-bottom: 1px solid #79b7d333; }
+.match-header small { color: #8ee8ef; letter-spacing: 2px; }
+.sim-toolbar { background: #101f2d; gap: 16px; }
+.sim-score { font-variant-numeric: tabular-nums; color: #eaf8ff; text-shadow: 0 0 25px #83c5ec44; }
+.sim-objective { background: linear-gradient(90deg,#1c3040,#101b28); border-block: 1px solid #79b7d326; }
+.sim-layout aside { background: #0d1926; padding: 16px; }
+.sim-roster button { border-radius: 8px; margin-bottom: 5px; background: linear-gradient(110deg,#203040,#122130); }
+.sim-roster button[aria-pressed="true"] { outline: 1px solid #8ae9ff; background: #254455; }
+.sim-camera-tools { border: 1px solid #6dc3d740; border-radius: 10px; box-shadow: 0 8px 24px #0006; }
+.sim-plan-view { position: absolute; inset: 12px 12px 110px; max-width: 650px; margin: auto; aspect-ratio: 1; background: #122230; border: 1px solid #477087; border-radius: 12px; }
+.sim-plan-view[hidden] { display: none; }
+.sim-plan-view > img { width: 100%; height: 100%; object-fit: fill; opacity: .85; }
+.sim-plan-view button { position: absolute; transform: translate(-50%,-50%); width: 30px; height: 30px; padding: 2px; border: 2px solid var(--side); border-radius: 50%; background: #10202c; z-index: 2; }
+.sim-plan-view button img { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; }
+.sim-plan-view button span { position: absolute; top: 30px; left: 50%; transform: translateX(-50%); font-size: 9px; color: #fff; background: #07101be6; padding: 2px 5px; border-radius: 4px; white-space: nowrap; }
+.sim-plan-view button.dead { opacity: .35; filter: grayscale(1); }
+.sim-plan-view button.selected { box-shadow: 0 0 0 4px #8ae9ff66; }
+.sim-plan-spike { position: absolute; color: #ffc17e; transform: translate(-50%,-50%); text-shadow: 0 0 10px #ff9b55; }
+.sim-map[data-view="2d"] .sim-minimap,.sim-map[data-view="2d"] .sim-reticle,.sim-map[data-view="2d"] .sim-camera-orbit { display: none; }
+@media(max-width:800px) { .sim-plan-view { inset: 55px 8px 120px; max-height: 310px; } .sim-plan-view button { width: 24px; height: 24px; } }
+.sim-plan-view button:hover,.sim-plan-view button:focus-visible,.sim-plan-view button.selected { z-index: 5; }
+.sim-plan-view button span { pointer-events: none; }

@@ -1,0 +1,181 @@
+:root {
+  --sidebar-width: 242px;
+  --mobile-nav-height: 110px;
+}
+
+.sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 20;
+  width: var(--sidebar-width);
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  padding: 26px 14px 16px;
+  background: #101619;
+  border-right: 1px solid #293236;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #3c474c transparent;
+}
+
+.sidebar > .brand,
+.sidebar > .club-panel,
+.sidebar > nav,
+.sidebar > .manager-line {
+  flex-shrink: 0;
+}
+
+.app-shell main {
+  margin-left: var(--sidebar-width);
+}
+
+.nav-caption {
+  margin: 0 13px 9px;
+  color: #657174;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 48px;
+  margin: 4px 0;
+  padding: 7px 12px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #929fa2;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 700;
+  transition: background .18s, color .18s;
+}
+
+.nav-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 30px;
+  width: 30px;
+  height: 30px;
+  border: 1px solid #ffffff08;
+  border-radius: 8px;
+  background: #ffffff04;
+}
+
+.nav-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.nav-link i {
+  margin-left: auto;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #303a3d;
+  font-size: 10px;
+  font-style: normal;
+}
+
+.nav-link:hover {
+  background: #202b30;
+  color: #edf3f5;
+}
+
+.nav-link.active {
+  background: linear-gradient(100deg, #ff46551a, #ff465505);
+  color: #fff;
+  box-shadow: inset 3px 0 #ff4655;
+}
+
+.nav-link.active .nav-icon {
+  border-color: #ff46552b;
+  background: #ff46551a;
+  color: #ff6975;
+}
+
+.nav-link:focus-visible {
+  outline: 2px solid #ff6975;
+  outline-offset: 2px;
+}
+
+.manager-line {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: auto;
+  padding: 17px 9px 0;
+  border-top: 1px solid #293236;
+  font-size: 11px;
+}
+
+.manager-line > span {
+  display: grid;
+  place-items: center;
+  width: 31px;
+  height: 31px;
+  border-radius: 8px;
+  background: #394246;
+  font-weight: 800;
+}
+
+.manager-line small {
+  display: block;
+  color: #8d989b;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+@media (max-width: 1150px) {
+  :root { --sidebar-width: 200px; }
+  .nav-link { gap: 8px; padding-inline: 8px; }
+}
+
+@media (max-width: 700px) {
+  .sidebar {
+    inset: 0 0 auto;
+    width: 100%;
+    height: var(--mobile-nav-height);
+    padding: 10px 12px;
+    border-right: 0;
+    border-bottom: 1px solid #293236;
+    overflow-y: hidden;
+  }
+  .sidebar .brand { height: 34px; padding: 0 4px; }
+  .sidebar .brand-symbol { font-size: 29px; }
+  .sidebar .brand strong { font-size: 18px; }
+  .sidebar .club-panel,
+  .sidebar .nav-caption,
+  .sidebar .manager-line { display: none; }
+  .sidebar nav {
+    display: flex;
+    gap: 4px;
+    margin-top: 9px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .nav-link {
+    flex: none;
+    width: auto;
+    min-height: 40px;
+    margin: 0;
+    padding: 5px 9px;
+    gap: 6px;
+    font-size: 10px;
+    white-space: nowrap;
+  }
+  .nav-icon { flex-basis: 25px; width: 25px; height: 25px; border-radius: 6px; }
+  .nav-icon svg { width: 17px; height: 17px; }
+  .nav-link i { display: none; }
+  .app-shell main { margin-left: 0; padding-top: var(--mobile-nav-height); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-link { transition: none; }
+}
