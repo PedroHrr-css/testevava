@@ -1,0 +1,116 @@
+import {test,expect,type Page} from '@playwright/test';
+
+async function createCareer(page:Page){
+  await page.emulateMedia({reducedMotion:'reduce'});
+  await page.goto('/');
+  await page.locator('[data-home-start]').first().click();
+  await page.locator('#select-team').click();
+  await page.locator('#manager-name').fill('Mercado Teste');
+  await page.locator('#start').click();
+  await page.locator('[data-contract-sign]').click();
+  await expect(page.locator('.home-profile b')).toHaveText('Mercado Teste');
+}
+
+const saved=(page:Page)=>page.evaluate(()=>JSON.parse(localStorage.getItem('tactical-career-v3')!));
+
+test('players, staff and scouts can be hired and transferred with saved balances',async({page})=>{
+  const errors:string[]=[];page.on('pageerror',error=>errors.push(error.message));
+  await createCareer(page);
+  await page.locator('.home-nav-link[data-view="market"]').click();
+  await expect(page.locator('.market-tabs button')).toHaveCount(4);
+  await page.locator('[data-market-tab="sell"]').click();
+  await expect(page.locator('[data-action="sell-player"]')).toHaveCount(5);
+  await expect(page.locator('[data-action="sell-player"]').first()).toBeDisabled();
+  await page.locator('[data-market-tab="players"]').click();
+  await page.locator('#market-origin').selectOption('free');
+  await expect(page.locator('.market-card')).toHaveCount(12);
+  await page.locator('#market-search').fill('zen');
+  await expect(page.locator('.market-card')).toHaveCount(1);
+  const before=await saved(page);
+  const candidate=before.market.find((person:{id:string})=>person.id==='free-agent-zen');
+  await page.locator('[data-action="buy"][data-id="free-agent-zen"]').click();
+  const hired=await saved(page);
+  expect(hired.players.length).toBe(6);
+  expect(hired.money).toBe(before.money-candidate.price);
+  await expect(page.locator('.market-feedback')).toContainText('zen chegou');
+  await page.locator('#market-search').fill('');
+  await page.locator('[data-market-tab="sell"]').click();
+  const captain=hired.captain;
+  await page.locator(`[data-action="sell-player"][data-id="${captain}"]`).click();
+  const sold=await saved(page);
+  expect(sold.players.length).toBe(5);
+  expect(sold.money).toBeGreaterThan(hired.money);
+  expect(sold.captain).not.toBe(captain);
+  expect(sold.players.some((person:{id:string})=>person.id===sold.captain)).toBe(true);
+  await expect(page.locator('[data-action="sell-player"]').first()).toBeDisabled();
+  await page.locator('[data-market-tab="scouts"]').click();
+  await expect(page.locator('.staff-candidate')).toHaveCount(2);
+  await expect(page.locator('.staff-avatar .generic-portrait')).toHaveCount(2);
+  await page.locator('[data-action="hire-staff"][data-id="scout-igor"]').click();
+  const withScout=await saved(page);
+  expect(withScout.money).toBe(sold.money-70);
+  expect(withScout.staff[0].role).toBe('scout');
+  await page.locator('[data-market-tab="players"]').click();
+  await page.locator('#market-search').fill('pulse');
+  const pulse=withScout.market.find((person:{id:string})=>person.id==='free-agent-pulse');
+  await page.locator('[data-action="buy"][data-id="free-agent-pulse"]').click();
+  const discounted=await saved(page);
+  expect(discounted.money).toBe(withScout.money-Math.round(pulse.price*.92));
+  await page.locator('[data-market-tab="scouts"]').click();
+  await page.screenshot({path:'test-results/market-scouts-desktop.png',fullPage:true});
+  await page.locator('[data-action="transfer-staff"]').click();
+  const staffSold=await saved(page);
+  expect(staffSold.staff.length).toBe(0);
+  expect(staffSold.money).toBe(discounted.money+64);
+  await expect(page.locator('[data-action="hire-staff"][data-id="scout-igor"]')).toBeEnabled();
+  await page.locator('[data-market-tab="staff"]').click();
+  await expect(page.locator('.staff-candidate')).toHaveCount(6);
+  await page.locator('[data-action="hire-staff"][data-id="coach-murilo"]').click();
+  await expect(page.locator('.staff-member')).toHaveCount(1);
+  await page.locator('[data-action="fire-staff"]').click();
+  await expect(page.locator('.staff-member')).toHaveCount(0);
+  await page.setViewportSize({width:390,height:844});
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
+  await page.screenshot({path:'test-results/market-staff-mobile.png',fullPage:true});
+  await page.reload();
+  await page.locator('.home-nav-link[data-view="market"]').click();
+  await page.locator('#market-origin').selectOption('free');
+  await expect(page.locator('[data-market-player="free-agent-pulse"]')).toHaveCount(0);
+  await page.screenshot({path:'test-results/market-players-mobile.png',fullPage:true});
+  expect(errors).toEqual([]);
+});
+
+test('academy portraits stay the same after promotion and save reload',async({page})=>{
+  await createCareer(page);
+  // Isolated test save: make one academy prospect eligible for promotion.
+  const prospect=await page.evaluate(()=>{
+    const state=JSON.parse(localStorage.getItem('tactical-career-v3')!);
+    state.academyProspects[0].rating=72;
+    const person=state.academyProspects[0];
+    localStorage.setItem('tactical-career-v3',JSON.stringify(state));return person;
+  });
+  await page.reload();
+  await page.locator('summary[aria-label="Mais opções de Equipe"]').click();
+  await page.locator('.home-nav-menu [data-view="basecamp"]').click();
+  await expect(page.locator('.academy-avatar .generic-portrait')).toHaveCount(6);
+  await page.request.get('/assets/portraits/generic-portraits.png').then(response=>expect(response.ok()).toBe(true));
+  const card=page.locator('.academy-prospect').filter({has:page.locator(`[data-id="${prospect.id}"]`)});
+  const portrait=await card.locator('.generic-portrait').getAttribute('style');
+  await page.screenshot({path:'test-results/academy-portraits-desktop.png',fullPage:true});
+  await card.locator('[data-action="promote-prospect"]').click();
+  await page.locator('.home-nav-link[data-view="squad"]').click();
+  const row=page.locator(`tr[data-player="${prospect.id}"]`);
+  await expect(row.locator('.generic-portrait')).toHaveAttribute('style',portrait!);
+  const state=await saved(page);
+  expect(state.players.some((person:{id:string})=>person.id===prospect.id)).toBe(true);
+  expect(state.academyProspects.some((person:{id:string})=>person.id===prospect.id)).toBe(false);
+  await page.reload();
+  await page.locator('.home-nav-link[data-view="squad"]').click();
+  await expect(page.locator(`tr[data-player="${prospect.id}"] .generic-portrait`)).toHaveAttribute('style',portrait!);
+  await page.locator('summary[aria-label="Mais opções de Equipe"]').click();
+  await page.locator('.home-nav-menu [data-view="basecamp"]').click();
+  await page.locator('[data-action="discover-prospect"]').click();
+  const discovered=await saved(page);
+  expect(discovered.academyProspects.length).toBe(6);
+  expect(discovered.academyProspects.some((person:{id:string})=>person.id===prospect.id)).toBe(false);
+});

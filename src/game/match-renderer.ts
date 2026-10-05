@@ -5,7 +5,7 @@ import { clearSight } from './navigation.ts';
 import { buildWalls, planFloor, safeCameraPosition, WALL_HEIGHT, worldPoint, type FloorGrid } from './arena-geometry.ts';
 import { createPlayerModel } from './player-model.ts';
 
-const COLORS = [0xb2e441, 0xff5965];
+const COLORS = [0xff4655, 0x65d5b5];
 const OVERVIEW = new THREE.Vector3(66, 92, 90);
 export type CameraMode = 'tactical' | 'follow' | 'player';
 export interface RenderFrame {
@@ -42,7 +42,7 @@ function playerLabel(player: MatchPlayer, id: number): THREE.Sprite {
   const canvas = document.createElement('canvas'); canvas.width = 384; canvas.height = 88;
   const context = canvas.getContext('2d')!;
   context.fillStyle = '#09151ee8'; context.beginPath(); context.roundRect(0, 0, 384, 88, 12); context.fill();
-  context.fillStyle = id < 5 ? '#b2e441' : '#ff7581'; context.fillRect(0, 0, 7, 88);
+  context.fillStyle = id < 5 ? '#ff4655' : '#65d5b5'; context.fillRect(0, 0, 7, 88);
   context.font = 'bold 34px system-ui'; context.fillText(`${String(id % 5 + 1).padStart(2, '0')}  ${player.alias}`, 20, 43, 346);
   context.fillStyle = '#a3bdc8'; context.font = '22px system-ui'; context.fillText(player.agent.toUpperCase(), 20, 72, 346);
   const texture = new THREE.CanvasTexture(canvas); texture.colorSpace = THREE.SRGBColorSpace;

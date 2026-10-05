@@ -1,0 +1,15 @@
+.tournament-highlight{display:flex;align-items:center;justify-content:space-between;gap:20px;margin:0 0 22px;padding:22px 26px;border-left:3px solid #e44a56;background:linear-gradient(110deg,rgba(228,74,86,.13),transparent 70%)}
+.tournament-highlight h2{margin:6px 0;font-size:24px}
+.tournament-highlight p{margin:0;color:#adb4c0;font-size:13px}
+.tournament-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.tournament-unavailable{padding:26px;text-align:center;color:#e7eced}
+.tournament-unavailable b{font-size:17px}
+.tournament-unavailable p{margin:8px 0 0;color:#aab2bd;font-size:12px}
+.tournament-row{min-height:62px;gap:12px}
+.tournament-row .tournament-fixture{display:flex;flex:1;min-width:0;flex-direction:column;gap:4px}
+.tournament-fixture b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tournament-fixture small{font-size:11px;color:#9ca4af}
+.tournament-row strong{white-space:nowrap}
+.tournament-row .result-win{color:#85d9a0}
+.tournament-row .result-loss{color:#e8888c}
+@media(max-width:700px){.tournament-highlight{align-items:flex-start;flex-direction:column}.tournament-row{align-items:flex-start;flex-wrap:wrap}.tournament-row strong{margin-left:auto}}

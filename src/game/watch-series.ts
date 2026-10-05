@@ -1,15 +1,19 @@
 import { roundPaths, pathPosition } from './navigation.ts';
 import type { WatchOptions, Navigation } from '../types/game.ts';
 import { MatchAudio } from './match-audio.ts';
+import {broadcastLayout, killFeedRow, weaponIcon, objectiveIcon} from '../ui/match-broadcast.ts';
 import type { MatchRenderer, CameraMode } from './match-renderer.ts';
 
 const REPLAY_TIME_SCALE = .15;
 
-export function watchSeries({maps,players,own,opponent,escape,onFinish}: WatchOptions) {
+export function watchSeries(options: WatchOptions) {
+  const {maps,players,own,opponent,escape,onFinish}=options;
   const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
   const overlay = document.createElement('div');
-  overlay.className='match-overlay';
-  overlay.innerHTML=`<section class="match-viewer" role="dialog" aria-modal="true" aria-label="Simulação da partida" tabindex="-1"><header class="match-header"><div><small>SIMULAÇÃO TÁTICA · BO3</small><h2>${escape(own)} <span>VS</span> ${escape(opponent)}</h2></div><button class="sim-finish">PULAR E VER RESULTADO ↗</button></header><div class="sim-toolbar"><strong class="sim-score"></strong><span class="sim-status" aria-live="polite"></span><div><button class="sim-pause">PAUSAR</button><button class="sim-audio" aria-pressed="false">SOM: DESLIGADO</button><label>VELOCIDADE <select class="sim-speed"><option value="0.5">0,5×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option></select></label></div></div><div class="sim-objective"><span class="objective-dot"></span><div><small>OBJETIVO DO ROUND</small><b class="spike-status">CONTROLE DO MAPA</b></div><strong class="spike-clock">—</strong><div class="spike-progress"><i></i></div></div><div class="sim-layout"><div class="sim-map"><div class="sim-canvas" role="img" aria-label="Arena 3D animada. Arraste para girar a câmera ou selecione um atleta no elenco."></div><div class="sim-plan-view" hidden><img alt="Visão tática 2D do mapa">${players.map((p,id)=>`<button class="side-${id<5?0:1}" data-plan-unit="${id}" aria-label="Acompanhar ${escape(p.alias)}"><img src="/assets/agents/${p.agent}.png" alt=""><span>${escape(p.alias)}</span></button>`).join('')}<i class="sim-plan-spike">◆</i></div><div class="sim-minimap"><div class="sim-minimap-plan"><img alt="Planta do mapa para orientação">${players.map((_,id)=>`<i class="side-${id<5?0:1}" data-mini-unit="${id}"></i>`).join('')}</div><small class="sim-minimap-name"></small></div><div class="sim-player-card" hidden><img alt=""><div><small class="sim-player-state"></small><b class="sim-player-name"></b><span class="sim-player-agent"></span></div></div><div class="sim-reticle" aria-hidden="true"><i></i><i></i></div><div class="sim-camera-tools"><label>VISÃO <select class="sim-view-mode" aria-label="Visão da partida"><option value="3d">3D</option><option value="2d">2D</option></select></label><label>CÂMERA <select class="sim-camera-mode" aria-label="Modo da câmera"><option value="tactical">Tática 3D</option><option value="follow">Terceira pessoa</option><option value="player">Visão do atleta</option></select></label><div class="sim-player-switch"><button class="sim-player-prev" aria-label="Atleta vivo anterior">‹</button><button class="sim-player-next" aria-label="Próximo atleta vivo">›</button></div><div class="sim-camera-orbit"><button class="sim-rotate-left" aria-label="Girar câmera para a esquerda">↶</button><button class="sim-rotate-right" aria-label="Girar câmera para a direita">↷</button></div><button class="sim-camera-reset" aria-label="Mostrar mapa inteiro">MAPA INTEIRO</button><label>ZOOM <input class="sim-zoom" type="range" min="1" max="3" step="0.1" value="1" aria-label="Zoom da câmera"></label><span class="sim-camera-label">TÁTICA 3D</span></div><div class="sim-round-banner"></div></div><aside><h3>ELIMINAÇÕES</h3><div class="sim-feed"></div><h3>ELENCO · K / D</h3><div class="sim-roster">${players.map((p,i)=>`<button class="side-${i<5?0:1}" data-roster="${i}" aria-pressed="false" aria-label="Acompanhar ${escape(p.alias)}"><img src="/assets/agents/${p.agent}.png" alt=""><span>${escape(p.alias)}<small>${escape(p.agent)}</small></span><b>0 / 0</b></button>`).join('')}</div></aside></div><footer>Alterne entre a planta 2D e a arena 3D estilizada. Arraste para girar a câmera; use o elenco ou ‹ › para trocar de atleta. Pausa e velocidade controlam o replay.</footer></section>`;
+  overlay.className='match-overlay broadcast-overlay';
+  overlay.innerHTML=broadcastLayout(options);
+  const previousOverflow=document.body.style.overflow;
+  document.body.style.overflow='hidden';
   document.body.append(overlay);
   const q = <T extends HTMLElement = HTMLElement>(selector: string): T => {
     const element = overlay.querySelector<T>(selector);
@@ -22,9 +26,14 @@ export function watchSeries({maps,players,own,opponent,escape,onFinish}: WatchOp
   let selectedPlayer: number | null = null, cameraMode: CameraMode = 'tactical';
   let lastDead = new Set<number>();
   const audio = new MatchAudio();
-  let score=[0,0], series=[0,0], totals=players.map(()=>({kills:0,deaths:0}));
-  const finish=()=>{if(finished)return;finished=true;cancelAnimationFrame(frame);renderer?.destroy();audio.destroy();overlay.remove();onFinish();if(previousFocus?.isConnected)previousFocus.focus();};
+  let score=[0,0], series=[0,0], totals=players.map(()=>({kills:0,deaths:0,assists:0}));
+  const finish=()=>{if(finished)return;finished=true;cancelAnimationFrame(frame);renderer?.destroy();audio.destroy();overlay.remove();document.body.style.overflow=previousOverflow;onFinish();if(previousFocus?.isConnected)previousFocus.focus();};
   q('.sim-finish').onclick=finish;
+  q('.sim-event-filter').onclick=()=>{
+    const button=q('.sim-event-filter'), expanded=button.getAttribute('aria-pressed')!=='true';
+    button.setAttribute('aria-pressed',String(expanded));button.textContent=expanded?'Ver recentes':'Ver todos';
+    q('.sim-feed').classList.toggle('show-all',expanded);
+  };
   q('.sim-pause').onclick=()=>{paused=!paused;q('.sim-pause').textContent=paused?'CONTINUAR':'PAUSAR';};
   q<HTMLSelectElement>('.sim-speed').onchange=()=>speed=Number(q<HTMLSelectElement>('.sim-speed').value);
   q('.sim-audio').onclick=async()=>{
@@ -91,18 +100,36 @@ export function watchSeries({maps,players,own,opponent,escape,onFinish}: WatchOp
   q<HTMLInputElement>('.sim-zoom').oninput=()=>renderer?.zoom(Number(q<HTMLInputElement>('.sim-zoom').value));
   overlay.addEventListener('keydown',e=>{
     if(e.key==='Escape'){paused=true;q('.sim-pause').textContent='CONTINUAR';}
-    if(e.key==='Tab') {const items=[...overlay.querySelectorAll<HTMLElement>('button:not(:disabled),select,input')];const i=items.indexOf(document.activeElement as HTMLElement);e.preventDefault();items[(i+(e.shiftKey?-1:1)+items.length)%items.length].focus();}
+    if(e.key==='Tab') {const items=[...overlay.querySelectorAll<HTMLElement>('button:not(:disabled),select:not(:disabled),input:not(:disabled),summary')].filter(item=>item.getClientRects().length>0&&(!item.closest('details:not([open])')||item.matches('summary')));const i=items.indexOf(document.activeElement as HTMLElement);e.preventDefault();items[(i+(e.shiftKey?-1:1)+items.length)%items.length]?.focus();}
   });
   q('.match-viewer').focus();
   let applied=0, navigation: Record<string, Navigation>={}, routes: number[][]=[], spikeDeathsApplied=false, objectiveEvents=new Set<string>();
+  function addEvent(label:string,side:number,objective=false){
+    overlay.querySelector('.broadcast-event-empty')?.remove();
+    const seconds=Math.max(0,Math.ceil((maps[mapIndex].simulation.rounds[roundIndex].resolveAt-elapsed)/REPLAY_TIME_SCALE));
+    const time=`${Math.floor(seconds/60)}:${String(seconds%60).padStart(2,'0')}`;
+    q('.sim-feed').insertAdjacentHTML('afterbegin',`<div class="broadcast-event side-${side}"><time>${time}</time><span class="broadcast-event-icon">${objective?objectiveIcon:'×'}</span><span>${label}</span></div>`);
+  }
   q<HTMLButtonElement>('.sim-pause').disabled=true;
   q('.sim-status').textContent='CARREGANDO ARENA 3D…';
   for(const control of overlay.querySelectorAll<HTMLButtonElement | HTMLSelectElement | HTMLInputElement>('.sim-camera-tools button,.sim-camera-tools select,.sim-camera-tools input,[data-roster]'))control.disabled=true;
   function startRound(){
     applied=0;elapsed=0;spikeDeathsApplied=false;objectiveEvents.clear();
     q('.sim-map').classList.remove('detonating');
-    q('.sim-feed').innerHTML='';
+    q('.sim-feed').innerHTML='<p class="broadcast-event-empty">Aguardando os primeiros eventos.</p>';
+    q('.sim-killfeed').innerHTML='';
     const map=maps[mapIndex];
+    q('.broadcast-map-name').textContent=map.map.toUpperCase();
+    overlay.querySelector<HTMLImageElement>('.broadcast-map-preview')!.src=`/assets/maps/${map.map.toLowerCase()}-splash.jpg`;
+    const round=map.simulation.rounds[roundIndex];
+    rows.forEach((row,id)=>{
+      const weapon=round.events.find(event=>event.killer===id)?.weapon??(roundIndex===0||roundIndex===12?'classic':'vandal');
+      row.querySelector('.broadcast-loadout')!.innerHTML=weaponIcon(weapon);
+    });
+    q('.broadcast-rounds').innerHTML=Array.from({length:Math.max(24,map.simulation.rounds.length)},(_,id)=>{
+      const complete=id<roundIndex, item=map.simulation.rounds[id];
+      return `<span class="broadcast-round-slot ${id===roundIndex?'current':''} ${complete?`side-${item.winner} completed`:''}" ${id===roundIndex?'aria-current="step"':''} aria-label="Round ${id+1}${complete?`, vitória de ${escape(item.winner===0?own:opponent)}`:''}"><small>${String(id+1).padStart(2,'0')}</small><i>${complete?(item.outcome==='elimination'?'×':objectiveIcon):''}</i></span>`;
+    }).join('');
     overlay.querySelector<HTMLImageElement>('.sim-minimap img')!.src=`/assets/maps/${map.map.toLowerCase()}-plan.png`;
     q('.sim-minimap-name').textContent=map.map.toUpperCase();overlay.querySelector<HTMLImageElement>('.sim-plan-view > img')!.src=`/assets/maps/${map.map.toLowerCase()}-plan.png`;
     routes=roundPaths(navigation[map.map.toLowerCase()],map.map,map.simulation.rounds[roundIndex],(roundIndex<12)===(map.ownStartsAttack!==false));
@@ -145,9 +172,16 @@ export function watchSeries({maps,players,own,opponent,escape,onFinish}: WatchOp
     });
     while(applied<round.events.length && round.events[applied].time<=elapsed){
       const e=round.events[applied++];audio.cue('shot');totals[e.killer].kills++;totals[e.victim].deaths++;
-      q('.sim-feed').insertAdjacentHTML('afterbegin',`<div class="side-${e.killer<5?0:1}"><b>${escape(players[e.killer].alias)}</b> ⌖ <span>${escape(players[e.victim].alias)}</span></div>`);
+      if(e.assist!==null)totals[e.assist].assists++;
+      q('.sim-killfeed').insertAdjacentHTML('afterbegin',killFeedRow(e,players,escape));
+      while(q('.sim-killfeed').children.length>5)q('.sim-killfeed').lastElementChild?.remove();
+      addEvent(`${escape(players[e.killer].alias)} eliminou ${escape(players[e.victim].alias)}${e.assist!==null?` · assistência: ${escape(players[e.assist].alias)}`:''}`,e.killer<5?0:1);
     }
-    rows.forEach((row,i)=>row.querySelector('b')!.textContent=`${totals[i].kills} / ${totals[i].deaths}`);
+    rows.forEach((row,i)=>{
+      row.querySelector('.sim-player-stats')!.textContent=`${totals[i].kills} / ${totals[i].assists} / ${totals[i].deaths}`;
+      row.querySelector('.broadcast-hp')!.textContent=dead.has(i)?'ELIMINADO':'♥ 100';
+      (row.querySelector('.broadcast-health i') as HTMLElement).style.width=dead.has(i)?'0%':'100%';
+    });
     const spike=round.spike,over=elapsed>=round.resolveAt;
     const planting=spike&&elapsed>=spike.plantStart&&elapsed<spike.plantAt;
     const planted=spike&&elapsed>=spike.plantAt&&!over;
@@ -176,12 +210,18 @@ export function watchSeries({maps,players,own,opponent,escape,onFinish}: WatchOp
       for(const [id,time,label] of messages)if(label&&time!==null&&elapsed>=time&&!objectiveEvents.has(id)){
         objectiveEvents.add(id);
         audio.cue(id==='plant'?'plant':id==='defuse'?'defuse':round.outcome==='detonation'?'detonation':'round');
-        q('.sim-feed').insertAdjacentHTML('afterbegin',`<div class="spike-event">${label}</div>`);
+        addEvent(label,id==='defuse'?1-round.attacking:round.attacking,true);
       }
     }
     const outcomeLabel=round.outcome==='detonation'?' · SPIKE DETONADA':round.outcome==='defuse'?' · SPIKE DESARMADA':' · ELIMINAÇÃO';
     q('.sim-round-banner').textContent=over?`${round.winner===0?own:opponent} VENCE O ROUND${outcomeLabel}`:'';
     q('.sim-score').textContent=`${own} ${score[0]} : ${score[1]} ${opponent}`;
+    q('.broadcast-own-score').textContent=String(score[0]);q('.broadcast-opponent-score').textContent=String(score[1]);
+    q('.broadcast-round-number').textContent=`ROUND ${roundIndex+1} / ${Math.max(24,map.simulation.rounds.length)}`;
+    const remaining=Math.max(0,Math.ceil((round.resolveAt-elapsed)/REPLAY_TIME_SCALE));
+    q('.broadcast-clock').textContent=`${Math.floor(remaining/60)}:${String(remaining%60).padStart(2,'0')}`;
+    q('.broadcast-side').textContent=attacksOwn?'ATAQUE':'DEFESA';
+    for(const side of [0,1])q(`[data-alive="${side}"]`).textContent=`${players.filter((_,id)=>Math.floor(id/5)===side&&!dead.has(id)).length} VIVOS`;
     q('.sim-status').textContent=`${map.map} · MAPA ${mapIndex+1} · ROUND ${roundIndex+1} · ${attacksOwn?'ATAQUE':'DEFESA'} · SÉRIE ${series.join(' : ')}`;
     if(elapsed>=round.duration){
       if(!round.spike)audio.cue('round');

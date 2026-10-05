@@ -35,7 +35,13 @@ export function createMapSimulation<T>(win: boolean, players: T[], random = Math
       defuseStart:outcome==='defuse'?resolveAt-1.6:null,
       casualties:outcome==='detonation'?[...alive[0],...alive[1]]:[]}:null;
     spike?.casualties.forEach(id=>stats[id].deaths++);
-    rounds.push({winner,attacking,events,spike,outcome,resolveAt,duration:resolveAt+1.8,site:random()<.5?'A':'B',seed:random()});
+    const site=random()<.5?'A':'B', seed=random();
+    // Resolve weapon and hit type once, so the replay and feed share the same event.
+    events.forEach((event,index)=>{
+      event.weapon=rounds.length===0||rounds.length===12?'classic':(event.killer+Math.floor(seed*10))%5===0?'operator':event.killer%3===0?'phantom':'vandal';
+      event.headshot=((Math.floor(seed*1000)+index*37+event.killer*13)%100)<35;
+    });
+    rounds.push({winner,attacking,events,spike,outcome,resolveAt,duration:resolveAt+1.8,site,seed});
   }
   return {rounds,stats,score:win ? [13,loserScore] : [loserScore,13],players};
 }

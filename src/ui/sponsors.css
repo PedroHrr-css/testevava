@@ -1,0 +1,66 @@
+.sponsor-summary { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin-bottom:18px; }
+.sponsor-summary>div { min-height:96px; padding:18px 20px; border:1px solid #344249; background:linear-gradient(145deg,#1b282e,#131b21); }
+.sponsor-summary small,.sponsor-summary b,.sponsor-summary span { display:block; }
+.sponsor-summary small { color:#899ca5; font-size:9px; font-weight:800; letter-spacing:1.1px; }
+.sponsor-summary b { margin-top:10px; color:#f0f5f4; font:800 26px 'Barlow Condensed'; }
+.sponsor-summary span { margin-top:3px; color:#ff8b94; font-size:10px; }
+.sponsor-explainer { display:flex; align-items:center; flex-wrap:wrap; gap:10px 20px; margin-bottom:16px; padding:12px 16px; border-left:3px solid #ff4655; background:#242029; }
+.sponsor-explainer strong { color:#ff8992; font-size:10px; letter-spacing:1px; }
+.sponsor-explainer span { color:#b4bdc1; font-size:11px; }
+.streamer-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:14px; }
+.streamer-card { display:flex; flex-direction:column; min-width:0; padding:17px; border:1px solid #344148; background:linear-gradient(150deg,#1c282e,#131c22); }
+.streamer-card.active { border-color:#ff4655; box-shadow:inset 0 3px #ff4655; }
+.streamer-head { display:flex; align-items:center; gap:11px; min-height:66px; }
+.streamer-avatar { flex:0 0 56px; width:56px; height:56px; display:grid; place-items:center; border:1px solid var(--streamer-accent); border-radius:9px; background:color-mix(in srgb,var(--streamer-accent) 19%,#142129); color:var(--streamer-accent); font:900 27px 'Barlow Condensed'; }
+.streamer-avatar img { display:block; width:100%; height:100%; border-radius:8px; object-fit:cover; }
+.streamer-initials { width:100%; height:100%; display:grid; place-items:center; }
+.streamer-head>div { min-width:0; flex:1; }
+.streamer-head small { color:var(--streamer-accent); font-size:9px; font-weight:800; letter-spacing:1px; }
+.streamer-head h2 { margin:2px 0; color:#f4f6f4; font:800 23px 'Barlow Condensed'; }
+.streamer-head p { margin:0; color:#94a4ab; font-size:10px; }
+.streamer-live { align-self:flex-start; padding:4px 6px; background:#ff465523; color:#ff7b86; font-size:8px; font-weight:800; }
+.streamer-benefit { display:grid; gap:6px; margin:17px 0; padding:13px 0; border-block:1px solid #35434a; }
+.streamer-benefit span { color:#8fa0a7; font-size:9px; font-weight:800; letter-spacing:.6px; }
+.streamer-benefit strong { color:#f2f5f4; font:800 24px 'Barlow Condensed'; }
+.streamer-benefit strong small { color:#8fa0a7; font:500 12px 'DM Sans',sans-serif; }
+.streamer-contract { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px; margin-top:auto; }
+.streamer-contract span { color:#8d9ca3; font-size:9px; }
+.streamer-contract b { display:block; margin-top:4px; color:#f2f5f4; font:800 19px 'Barlow Condensed'; }
+.streamer-contract button { min-height:34px; padding:8px 11px; border:0; background:#ff4655; color:#17191c; font-size:9px; font-weight:800; }
+.streamer-contract button:disabled { background:#374148; color:#98a4a9; }
+.streamer-contract button:focus-visible { outline:2px solid #ff8992; outline-offset:3px; }
+.sponsor-disclaimer { margin:18px 0 0; color:#829199; font-size:10px; line-height:1.5; }
+.sponsor-section { margin-top:28px; }
+.sponsor-section-head { display:flex; align-items:end; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:15px; }
+.sponsor-section-head h2 { margin:5px 0; font:800 30px 'Barlow Condensed'; }
+.sponsor-section-head p { margin:0; color:#94a3a9; font-size:11px; line-height:1.5; }
+.sponsor-active-note { padding:7px 10px; border:1px solid #ff465566; color:#ff939d; font-size:10px; }
+.brand-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:14px; }
+.brand-card { display:flex; flex-direction:column; min-width:0; padding:17px; border:1px solid #344148; background:linear-gradient(150deg,#1d292f,#141d23); }
+.brand-card.active { border-color:#ff4655; box-shadow:inset 0 3px #ff4655; }
+.brand-heading { display:flex; align-items:center; gap:12px; }
+.brand-symbol { flex:0 0 45px; width:45px; height:45px; display:grid; place-items:center; border-radius:9px; border:1px solid var(--brand-accent); background:color-mix(in srgb,var(--brand-accent) 14%,#142129); color:var(--brand-accent); font-size:26px; }
+.brand-heading>div { flex:1; min-width:0; }
+.brand-heading small { color:var(--brand-accent); font-size:9px; font-weight:800; }
+.brand-heading h3 { margin:3px 0 0; font:800 23px 'Barlow Condensed'; }
+.brand-slogan { min-height:29px; margin:15px 0; color:#a3b1b6; font-size:11px; }
+.brand-rewards { display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:12px 0; border-block:1px solid #34434a; }
+.brand-rewards span { color:#8e9fa7; font-size:9px; font-weight:700; }
+.brand-rewards b { display:block; margin-top:4px; color:#edf4f2; font:800 18px 'Barlow Condensed'; }
+.brand-item { display:flex; align-items:center; gap:10px; padding:13px 0; }
+.brand-item i { display:grid; place-items:center; width:32px; height:32px; border-radius:5px; background:#ffffff0b; color:var(--brand-accent); font-size:20px; font-style:normal; }
+.brand-item span { color:#87989f; font-size:9px; }
+.brand-item b { display:block; margin-top:4px; color:#d8e1e2; font-size:11px; }
+.brand-card>button { width:100%; min-height:36px; margin-top:auto; border:0; background:#ff4655; color:#17191c; font-size:10px; font-weight:800; }
+.brand-card>button:disabled { background:#374148; color:#98a4a9; }
+.brand-card>button:focus-visible,.sponsor-inventory-item:focus-visible { outline:2px solid #ff8992; outline-offset:3px; }
+.sponsor-inventory { display:flex; flex-wrap:wrap; gap:10px; }
+.sponsor-inventory>p { padding:15px; color:#90a0a7; font-size:11px; }
+.sponsor-inventory-item { display:flex; align-items:center; gap:9px; min-width:180px; padding:10px; border:1px solid #38484e; background:#1c292f; color:#e3ebed; text-align:left; }
+.sponsor-inventory-item.equipped { border-color:#ff4655; background:#30252b; }
+.sponsor-inventory-item>span { color:#ff929c; font-size:23px; }
+.sponsor-inventory-item b { flex:1; font-size:11px; }
+.sponsor-inventory-item small { color:#ff929c; font-size:9px; }
+.jersey-sponsor-item { position:absolute; top:30px; right:8px; width:18px; height:18px; display:grid; place-items:center; border-radius:3px; background:#10191bbb; color:#f6f6f6; font-size:15px; }
+@media(max-width:1000px) { .sponsor-summary { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media(max-width:700px) { .sponsor-summary { grid-template-columns:1fr; } .streamer-grid,.brand-grid { grid-template-columns:1fr; } }

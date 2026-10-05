@@ -7,7 +7,7 @@ import requests
 ROOT = Path(__file__).parent
 ASSETS = ROOT / 'public' / 'assets'
 ASSETS.mkdir(exist_ok=True)
-TEAMS = [('loud',6961),('100t',120),('lev',2359),('nrg',1034),('prx',624),('tl',474),('kc',8877),('edg',1120)]
+TEAMS = [(team['id'],team['vlrId']) for team in json.loads((ROOT / 'teams.json').read_text(encoding='utf-8'))]
 
 def fetch_team(item):
     slug, tid = item

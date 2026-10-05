@@ -5,7 +5,11 @@ export interface Navigation {
   width: number; height: number; walk: number[];
 }
 export interface MatchPlayer { alias: string; agent: string }
-export interface CombatEvent { time: number; killer: number; victim: number; assist: number | null }
+export type MatchWeapon = 'classic' | 'vandal' | 'phantom' | 'operator';
+export interface CombatEvent {
+  time: number; killer: number; victim: number; assist: number | null;
+  weapon?: MatchWeapon; headshot?: boolean;
+}
 export interface Spike {
   planter: number; plantStart: number; plantAt: number; explodeAt: number;
   defuser: number | null; defuseStart: number | null; casualties: number[];
@@ -24,6 +28,7 @@ export interface SeriesMap {
 }
 export interface WatchOptions {
   maps: SeriesMap[]; players: MatchPlayer[]; own: string; opponent: string;
+  ownLogo?: string; opponentLogo?: string; competition?: string; stage?: string;
   escape: (value: unknown) => string; onFinish: () => void;
 }
 export type VetoSlot = 'A' | 'B';

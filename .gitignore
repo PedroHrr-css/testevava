@@ -9,3 +9,5 @@ __pycache__/
 Thumbs.db
 test-results/
 playwright-report/
+.local-backup-before-github-sync/
+/manager.js

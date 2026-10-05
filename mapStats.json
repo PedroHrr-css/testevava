@@ -2,13 +2,13 @@
   "loud": {
     "sample": 16,
     "maps": {
-      "Summit": 5,
+      "Summit": 4,
+      "Sunset": 3,
+      "Split": 2,
       "Ascent": 2,
       "Lotus": 2,
-      "Sunset": 2,
       "Haven": 2,
-      "Abyss": 2,
-      "Split": 1
+      "Abyss": 1
     }
   },
   "100t": {
@@ -46,6 +46,131 @@
       "Split": 1
     }
   },
+  "sen": {
+    "sample": 12,
+    "maps": {
+      "Ascent": 2,
+      "Haven": 2,
+      "Split": 2,
+      "Summit": 2,
+      "Breeze": 2,
+      "Sunset": 1,
+      "Lotus": 1
+    }
+  },
+  "g2": {
+    "sample": 12,
+    "maps": {
+      "Split": 3,
+      "Abyss": 3,
+      "Lotus": 2,
+      "Summit": 2,
+      "Haven": 1,
+      "Sunset": 1
+    }
+  },
+  "fur": {
+    "sample": 14,
+    "maps": {
+      "Haven": 4,
+      "Sunset": 3,
+      "Breeze": 2,
+      "Split": 2,
+      "Abyss": 1,
+      "Summit": 1,
+      "Ascent": 1
+    }
+  },
+  "mibr": {
+    "sample": 12,
+    "maps": {
+      "Sunset": 4,
+      "Lotus": 2,
+      "Haven": 2,
+      "Abyss": 1,
+      "Ascent": 1,
+      "Split": 1,
+      "Breeze": 1
+    }
+  },
+  "c9": {
+    "sample": 12,
+    "maps": {
+      "Breeze": 5,
+      "Split": 3,
+      "Lotus": 2,
+      "Haven": 1,
+      "Sunset": 1
+    }
+  },
+  "tl": {
+    "sample": 15,
+    "maps": {
+      "Lotus": 4,
+      "Split": 3,
+      "Ascent": 3,
+      "Summit": 2,
+      "Abyss": 1,
+      "Haven": 1,
+      "Sunset": 1
+    }
+  },
+  "kc": {
+    "sample": 14,
+    "maps": {
+      "Sunset": 3,
+      "Summit": 3,
+      "Haven": 3,
+      "Ascent": 2,
+      "Lotus": 2,
+      "Abyss": 1
+    }
+  },
+  "fnc": {
+    "sample": 11,
+    "maps": {
+      "Split": 3,
+      "Lotus": 2,
+      "Summit": 2,
+      "Breeze": 1,
+      "Sunset": 1,
+      "Haven": 1,
+      "Ascent": 1
+    }
+  },
+  "vit": {
+    "sample": 14,
+    "maps": {
+      "Ascent": 3,
+      "Summit": 3,
+      "Abyss": 3,
+      "Split": 2,
+      "Lotus": 2,
+      "Haven": 1
+    }
+  },
+  "fut": {
+    "sample": 11,
+    "maps": {
+      "Ascent": 3,
+      "Lotus": 3,
+      "Split": 2,
+      "Sunset": 1,
+      "Summit": 1,
+      "Haven": 1
+    }
+  },
+  "navi": {
+    "sample": 13,
+    "maps": {
+      "Sunset": 3,
+      "Haven": 3,
+      "Ascent": 3,
+      "Summit": 2,
+      "Breeze": 1,
+      "Split": 1
+    }
+  },
   "prx": {
     "sample": 13,
     "maps": {
@@ -57,26 +182,62 @@
       "Sunset": 1
     }
   },
-  "tl": {
-    "sample": 15,
+  "drx": {
+    "sample": 13,
     "maps": {
-      "Lotus": 5,
-      "Ascent": 3,
-      "Split": 2,
-      "Summit": 2,
-      "Haven": 2,
-      "Sunset": 1
+      "Lotus": 4,
+      "Sunset": 3,
+      "Abyss": 2,
+      "Ascent": 2,
+      "Haven": 2
     }
   },
-  "kc": {
+  "gen": {
     "sample": 14,
     "maps": {
-      "Haven": 3,
+      "Sunset": 4,
+      "Summit": 3,
+      "Lotus": 2,
+      "Split": 2,
+      "Ascent": 1,
+      "Breeze": 1,
+      "Haven": 1
+    }
+  },
+  "t1": {
+    "sample": 13,
+    "maps": {
+      "Ascent": 3,
       "Lotus": 3,
-      "Ascent": 2,
+      "Haven": 3,
+      "Sunset": 1,
+      "Abyss": 1,
+      "Summit": 1,
+      "Split": 1
+    }
+  },
+  "ge": {
+    "sample": 16,
+    "maps": {
+      "Split": 3,
+      "Sunset": 3,
       "Summit": 2,
-      "Sunset": 2,
-      "Abyss": 2
+      "Abyss": 2,
+      "Ascent": 2,
+      "Lotus": 2,
+      "Haven": 2
+    }
+  },
+  "ns": {
+    "sample": 15,
+    "maps": {
+      "Sunset": 3,
+      "Haven": 3,
+      "Summit": 2,
+      "Lotus": 2,
+      "Split": 2,
+      "Abyss": 2,
+      "Ascent": 1
     }
   },
   "edg": {
@@ -87,6 +248,62 @@
       "Lotus": 2,
       "Haven": 2,
       "Ascent": 2,
+      "Breeze": 1
+    }
+  },
+  "xlg": {
+    "sample": 12,
+    "maps": {
+      "Summit": 2,
+      "Sunset": 2,
+      "Haven": 2,
+      "Split": 2,
+      "Lotus": 2,
+      "Abyss": 1,
+      "Breeze": 1
+    }
+  },
+  "blg": {
+    "sample": 12,
+    "maps": {
+      "Haven": 3,
+      "Split": 3,
+      "Summit": 2,
+      "Lotus": 2,
+      "Ascent": 1,
+      "Sunset": 1
+    }
+  },
+  "te": {
+    "sample": 13,
+    "maps": {
+      "Sunset": 4,
+      "Split": 3,
+      "Summit": 2,
+      "Lotus": 2,
+      "Ascent": 2
+    }
+  },
+  "tyl": {
+    "sample": 15,
+    "maps": {
+      "Split": 4,
+      "Summit": 4,
+      "Lotus": 3,
+      "Sunset": 2,
+      "Abyss": 1,
+      "Breeze": 1
+    }
+  },
+  "jdg": {
+    "sample": 13,
+    "maps": {
+      "Lotus": 3,
+      "Haven": 3,
+      "Ascent": 2,
+      "Summit": 2,
+      "Abyss": 1,
+      "Split": 1,
       "Breeze": 1
     }
   }

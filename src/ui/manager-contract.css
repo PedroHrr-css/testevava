@@ -1,0 +1,55 @@
+.manager-sign-dialog { width:min(680px,calc(100vw - 28px)); max-height:calc(100dvh - 28px); overflow-y:auto; padding:22px; border:1px solid #ff465544; border-radius:12px; color:#e7eff5; background:#101923; box-shadow:0 30px 100px #000b; color-scheme:dark; }
+.manager-sign-dialog::backdrop { background:#050a10df; backdrop-filter:blur(8px); }
+.signing-heading { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:17px; }
+.signing-heading small { color:#ff7885; font-size:9px; letter-spacing:1px; }
+.signing-heading h2 { font:700 28px/1.1 'Barlow Condensed',Arial,sans-serif; margin:6px 0 0; }
+.signing-heading .team-emblem { width:46px; height:46px; border:0; background:none; }
+.contract-paper { padding:24px; border-radius:4px; background:linear-gradient(135deg,#f0eee7,#e4e4df); color:#27313a; box-shadow:0 10px 24px #0004; }
+.contract-paper header { display:flex; justify-content:space-between; gap:12px; padding-bottom:14px; border-bottom:1px solid #27313a29; font-size:8px; letter-spacing:.5px; color:#69747c; }
+.contract-paper header b { font-weight:500; }
+.contract-paper h3 { margin:17px 0 10px; font:700 25px 'Barlow Condensed',Arial,sans-serif; }
+.contract-paper p { margin:11px 0; font-size:11px; line-height:1.65; }
+.contract-terms { display:grid; grid-template-columns:1fr 1fr; gap:13px; padding:16px; margin:15px 0; border:1px solid #33434f20; background:#ffffff55; }
+.contract-terms dt { margin-bottom:5px; font-size:8px; color:#6c7982; letter-spacing:.4px; }
+.contract-terms dd { margin:0; font-size:13px; font-weight:600; }
+.contract-paper .contract-fiction { color:#79838a; font-size:9px; }
+.contract-signatures { display:grid; grid-template-columns:1fr 1fr; gap:25px; margin-top:20px; }
+.contract-signatures > div { position:relative; min-width:0; }
+.contract-signatures small { display:block; padding-top:8px; border-top:1px solid #2b3e4b44; font-size:8px; color:#6c7982; }
+.board-signature,.signature-name { display:block; height:52px; padding-top:9px; font:italic 22px/1.2 'Segoe Script','Brush Script MT',cursive; color:#203746; overflow-wrap:anywhere; }
+.board-signature { font-size:19px; }
+.signature-name { opacity:0; clip-path:inset(0 100% 0 0); }
+.signature-ink { position:absolute; left:0; top:30px; width:100%; height:30px; overflow:visible; }
+.signature-ink path { fill:none; stroke:#203746; stroke-width:1.5; stroke-linecap:round; stroke-dasharray:480; stroke-dashoffset:480; }
+.contract-signing .signature-name { animation:manager-signature-write 1.5s .1s ease-in-out forwards; }
+.contract-signing .signature-ink path { animation:manager-signature-stroke 1s 1s ease-out forwards; }
+.signing-status { min-height:20px; margin:14px 0; font-size:11px; color:#a8bbc9; }
+.contract-signing .signing-status { color:#aacfaf; }
+.signing-actions { display:flex; justify-content:space-between; align-items:center; gap:14px; }
+.signing-actions > button:first-child { border:0; background:none; color:#97adbd; font-size:11px; padding:10px 0; }
+.signing-actions .primary { min-height:44px; border-radius:5px; font-size:10px; padding:12px 20px; }
+.signing-actions button:focus-visible { outline:2px solid #ff8d98; outline-offset:4px; }
+.welcome-mail-notice { display:flex; justify-content:space-between; align-items:center; gap:18px; padding:15px 18px; margin-bottom:18px; border:1px solid #ff465539; border-left:3px solid #ff4655; border-radius:7px; background:linear-gradient(110deg,#ff465514,#111d28); }
+.welcome-mail-notice b { display:block; font-size:12px; }
+.welcome-mail-notice small { display:block; margin-top:5px; color:#9cafbd; font-size:11px; }
+.welcome-mail-notice button { flex:none; padding:10px 12px; border:1px solid #ff46554d; border-radius:4px; background:#ff465510; color:#ff8a95; font-size:10px; font-weight:700; }
+@keyframes manager-signature-write { from { opacity:1; clip-path:inset(0 100% 0 0); } to { opacity:1; clip-path:inset(0); } }
+@keyframes manager-signature-stroke { to { stroke-dashoffset:0; } }
+@media(max-width:500px) {
+  .manager-sign-dialog { padding:15px; }
+  .signing-heading h2 { font-size:24px; }
+  .contract-paper { padding:17px; }
+  .contract-paper header { font-size:7px; }
+  .contract-terms { padding:12px; gap:12px; }
+  .contract-terms dd { font-size:11px; }
+  .contract-signatures { gap:12px; }
+  .board-signature,.signature-name { font-size:16px; }
+  .signing-actions { align-items:stretch; flex-direction:column-reverse; gap:5px; }
+  .signing-actions .primary { width:100%; }
+  .welcome-mail-notice { align-items:flex-start; }
+  .welcome-mail-notice small { font-size:10px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .contract-signing .signature-name { animation:none; opacity:1; clip-path:none; }
+  .contract-signing .signature-ink path { animation:none; stroke-dashoffset:0; }
+}

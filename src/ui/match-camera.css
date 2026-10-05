@@ -101,7 +101,7 @@
 }
 
 /* Broadcast HUD */
-.match-viewer { border: 1px solid #486579; border-radius: 18px; overflow: hidden; box-shadow: 0 28px 100px #0009; background: linear-gradient(145deg,#142330,#09131e); }
+.match-viewer { border: 1px solid #486579; border-radius: 18px; overflow-y: auto; box-shadow: 0 28px 100px #0009; background: linear-gradient(145deg,#142330,#09131e); }
 .match-header { background: linear-gradient(110deg,#20384b,#101d2b); border-bottom: 1px solid #79b7d333; }
 .match-header small { color: #8ee8ef; letter-spacing: 2px; }
 .sim-toolbar { background: #101f2d; gap: 16px; }

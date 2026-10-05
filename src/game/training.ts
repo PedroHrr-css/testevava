@@ -1,4 +1,5 @@
 import type { CareerState } from '../types/career.ts';
+import {shopBonuses} from './shop.ts';
 export type TrainingKind = 'aim' | 'agent-match' | 'ability-names' | 'map-guess';
 export interface TrainingResult { id: string; kind: TrainingKind; score: number; targets: { playerId: string; agentId: string }[]; map: string; completedAt: string; durationMs?: number; accuracyScore?: number; speedBonus?: number; rewards?: string[] }
 export const trainingLabels: Record<TrainingKind,string> = {aim:'Mira e reflexos','agent-match':'Habilidade → agente','ability-names':'Nome → habilidade','map-guess':'Reconhecimento de mapas'};
@@ -7,7 +8,8 @@ export function rewardTraining(state:CareerState,result:TrainingResult):string[]
   state.trainingHistory??=[];
   if(state.trainingHistory.some(r=>r.id===result.id))return [];
   for(const player of state.players)player.mapMastery??={...state.mapMastery};
-  const gain=Math.floor(Math.max(0,Math.min(100,result.score))/12.5), rewards:string[]=[];
+  const baseGain=Math.floor(Math.max(0,Math.min(100,result.score))/12.5);
+  const gain=baseGain+(baseGain>0?shopBonuses(state).trainingMastery:0), rewards:string[]=[];
   for(const target of result.targets.filter((t,i,a)=>a.findIndex(x=>x.playerId===t.playerId)===i)) {
     const player=state.players.find(p=>p.id===target.playerId);if(!player)continue;
     const values=result.kind==='map-guess'?(player.mapMastery??={...state.mapMastery}):player.agentMastery;

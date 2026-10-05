@@ -179,3 +179,53 @@
 @media (prefers-reduced-motion: reduce) {
   .nav-link { transition: none; }
 }
+
+/* Compact club navigation */
+@media (min-width: 701px) {
+  :root { --sidebar-width: 178px; }
+  .sidebar {
+    padding: 8px 7px 12px;
+    background: linear-gradient(155deg,#2b2d3c,#1b1d29 70%,#161821);
+    border-right-color: #3b3c49;
+  }
+  .sidebar > .brand, .sidebar > .nav-caption, .sidebar > .manager-line { display: none; }
+  .sidebar > .club-panel {
+    margin: 0 0 8px;
+    padding: 0 0 8px;
+    background: none;
+    border: 0;
+    border-bottom: 1px solid #ffffff13;
+    clip-path: none;
+  }
+  .sidebar .club-panel > .eyebrow, .sidebar .season-line { display: none; }
+  .sidebar .club-profile { gap: 7px; margin: 0; }
+  .sidebar .club-profile .team-emblem { width: 38px; height: 38px; }
+  .sidebar .club-profile b { font: 700 14px 'Barlow Condensed'; }
+  .sidebar .club-profile small { font-size: 9px; }
+  .sidebar nav { display: flex; flex: 1; flex-direction: column; }
+  .nav-link { min-height: 30px; margin: 1px 0; padding: 3px 6px; gap: 8px; border-radius: 2px; font-size: 12px; font-weight: 500; }
+  .nav-icon { flex-basis: 27px; width: 27px; height: 25px; border: 0; border-radius: 0; background: none; color: #e1e4e9; }
+  .nav-icon svg { width: 21px; height: 21px; }
+  .nav-link.active { background: linear-gradient(90deg,#ff465580,transparent); box-shadow: inset 3px 0 #ff4655; }
+  .nav-link.active .nav-icon { border: 0; background: none; color: #ffe7e9; }
+  .nav-group-settings { margin-top: auto; }
+}
+
+.nav-group{padding:9px 0 7px;border-top:1px solid #ffffff0b}
+.nav-group:first-child{border-top:0;padding-top:2px}
+.nav-group-title{margin:0 7px 6px;color:#8a8e9e;font-size:8px;font-weight:800;letter-spacing:1.15px;text-transform:uppercase;line-height:1.5}
+.nav-group-items{display:flex;flex-direction:column;gap:1px}
+.nav-group .nav-link{border-radius:5px;margin:0;min-height:32px}
+.nav-group .nav-link i{background:#ff465522;color:#ff9aa4;font-size:9px}
+.nav-group .nav-link:hover{background:#ffffff08}
+.nav-group .nav-link.active{background:linear-gradient(90deg,#ff465532,#ff465509);box-shadow:inset 3px 0 #ff4655}
+.nav-group-settings{padding-bottom:0}
+@media(max-width:700px){
+  :root{--mobile-nav-height:130px}
+  .sidebar nav{align-items:flex-start;gap:12px;margin-top:6px;padding-bottom:3px}
+  .nav-group,.nav-group:first-child{flex:none;border-top:0;padding:0 12px 0 0;border-right:1px solid #ffffff12}
+  .nav-group:last-child{border-right:0;padding-right:0}
+  .nav-group-title{margin:0 7px 4px;font-size:7px;letter-spacing:.8px}
+  .nav-group-items{flex-direction:row;gap:3px}
+  .nav-group .nav-link{min-height:36px}
+}
