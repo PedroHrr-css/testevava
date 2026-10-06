@@ -1,0 +1,28 @@
+VAVA MANAGER — DEMO
+
+Extraia vava-manager-demo.zip para uma pasta.
+
+Para jogar localmente, abra um terminal nessa pasta e execute:
+  python -m http.server 8080 --bind 127.0.0.1
+
+Depois abra:
+  http://127.0.0.1:8080/?demo=1
+
+O comando requer Python instalado. Para distribuir na web, hospede o conteúdo
+extraído em um serviço de arquivos estáticos e compartilhe a URL com ?demo=1.
+O endereço 127.0.0.1 funciona somente no próprio computador.
+
+Não abra index.html diretamente pelo disco: o jogo carrega dados via HTTP.
+
+A demo tem quatro semanas e quatro partidas BO3, com todos os menus livres.
+Os convites iniciais já estão aceitos. As tarefas são sugestões, e perder
+partidas não impede continuar. Na última partida, consulte o balanço na home.
+
+Save automático no navegador: tactical-demo-v1.
+A carreira normal usa outro save. Reset na demo apaga apenas a demo.
+
+O feedback pode ser escrito e baixado ao concluir a campanha. Ele é salvo
+em um arquivo local; você decide se deseja compartilhá-lo com a equipe.
+
+O projeto ainda está em desenvolvimento. Os resultados das rodadas são
+calculados antes da transmissão; mudanças táticas ao vivo são uma etapa futura.

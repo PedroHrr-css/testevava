@@ -22,6 +22,7 @@ export interface ManagerEmail {
 export interface StaffContract {id:string; candidateId:string; name:string; role:'coach'|'analyst'|'scout'|'fitness'; quality:number; weeklySalary:number; contractWeeks:number; lastDevelopmentWeek?:number}
 export interface AcademyProspect {id:string;name:string;age:number;role:string;rating:number;potential:number;weeksInAcademy:number;lastTrainingWeek?:number;portrait?:number}
 export interface CareerState {
+  demo?:{version:1;lineupConfirmed?:boolean;feedback?:string;completedAt?:string};
   team: string; manager: string; managerAvatar?: string; managerNationality?: string; managerBackground?: string; managerContract?: {weeksRemaining:number;weeklySalary:number;signedAt?:string}; difficulty: string; week: number; day?: number; money: number; fans: number;
   points: number; wins: number; losses: number; players: Player[]; market: MarketPlayer[];
   marketCatalogVersion?: number;

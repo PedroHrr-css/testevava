@@ -1,6 +1,8 @@
 import type { CareerState, Team, View } from '../types/career.ts';
 import { navIcon, NAV_ITEMS } from './navigation.ts';
 import { tournamentAccess, tournamentRound, canPlayTournament } from '../game/tournaments.ts';
+import {demoFinished,careerProgression} from '../game/progression.ts';
+import {progressionView} from './progression-view.ts';
 
 const esc = (value: unknown) => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
 const arrow = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M3 12h17m-6-6 6 6-6 6"/></svg>';
@@ -41,12 +43,13 @@ interface HomeOptions {
 export function homeView({state,own,rival,badge,portraits,calendar='',running=false,feedback='',canPlay=false,played=false}:HomeOptions):string {
   const round=state?tournamentRound(state.week):null;
   const access=state&&round?tournamentAccess(state,round):null;
-  const finished=!!state&&state.week>14;
+  const finished=!!state&&(state.week>14||demoFinished(state));
   const pendingInvite=access==='invite'&&!finished;
   const available=!!state&&!finished&&canPlayTournament(state)&&!played;
-  const progress=state?Math.min(100,finished?100:((state.week-1)*7+(state.day||1)-1)/98*100):0;
+  const totalWeeks=state?.demo?4:14;
+  const progress=state?Math.min(100,finished?100:state.demo?(state.tournamentResults?.length??0)/4*100:((state.week-1)*7+(state.day||1)-1)/98*100):0;
   const winRate=state&&state.wins+state.losses?Math.round(state.wins/(state.wins+state.losses)*100):0;
-  const tasks=state?[
+  const tasks=state?.demo?careerProgression(state).goals.map(goal=>({view:goal.view,title:goal.title,description:goal.why,done:goal.done})):state?[
     {view:'squad',title:'Preparar a escalação',description:`${state.players.slice(0,5).length} titulares · ${own.name}`,done:state.players.length>=5},
     {view:'scouting',title:'Observar o adversário',description:state.scoutReports[rival.id]?'Relatório disponível':`Conheça o ${rival.name}`,done:!!state.scoutReports[rival.id]},
     {view:pendingInvite?'competition':'training',title:pendingInvite?'Responder ao convite':'Treinar a equipe',description:pendingInvite?round!.name:`Mapa em foco · ${state.trainingMap}`,done:!pendingInvite&&Object.values(state.trainingUsage||{}).some(item=>item.week===state.week&&item.count>0)},
@@ -56,10 +59,11 @@ export function homeView({state,own,rival,badge,portraits,calendar='',running=fa
     {view:'competition',title:'Começar a temporada',description:'Sua jornada até o topo',done:false},
   ];
   const latest=state?.log[0];
-  const primaryAction=!state?'data-home-start':finished?'data-action="open-calendar"':running?'data-action="stop-calendar"':pendingInvite||canPlay?'data-view="competition"':'data-action="advance-day"';
-  const primaryText=!state?'INICIAR CARREIRA':finished?'VER TEMPORADA':running?'PAUSAR':pendingInvite?'VER CONVITE':canPlay?'DIA DE PARTIDA':'CONTINUAR';
+  const primaryAction=!state?'data-home-start':finished?(state.demo?'data-view="ranking"':'data-action="open-calendar"'):running?'data-action="stop-calendar"':pendingInvite||canPlay?'data-view="competition"':'data-action="advance-day"';
+  const primaryText=!state?'INICIAR CARREIRA':finished?(state.demo?'VER BALANÇO':'VER TEMPORADA'):running?'PAUSAR':pendingInvite?'VER CONVITE':canPlay?'DIA DE PARTIDA':'CONTINUAR';
   return `<div class="home-layout">
     <div class="home-main">
+      ${state?progressionView(state):''}
       <section class="home-hero" aria-labelledby="home-title">
         <span class="home-kicker">VALORANT · ESPORTS</span>
         <h1 id="home-title">VAVA<br>MANAGER</h1>
@@ -81,7 +85,7 @@ export function homeView({state,own,rival,badge,portraits,calendar='',running=fa
         ${available?`<div class="home-matchup"><div>${badge(own)}<b>${esc(own.name)}</b></div><span>VS</span><div>${badge(rival)}<b>${esc(rival.name)}</b></div></div><p>${esc(round!.name)}<small>${canPlay?'Hoje':`${7-(state!.day||1)} dias`} · BO3</small></p>`:`<div class="home-match-empty">${navIcon('competition')}<b>${!state?'O palco espera por você':finished?'Temporada concluída':pendingInvite?'Você recebeu um convite':played?'Partida concluída':'Aguardando próxima etapa'}</b><p>${esc(!state?'Inicie sua carreira para entrar no circuito.':round!.name)}</p></div>`}
         <button class="home-widget-button" ${state?'data-view="competition"':'data-home-start'}>${pendingInvite?'VER CONVITE':!state?'ESCOLHER EQUIPE':'VER COMPETIÇÃO'}</button>
       </section>
-      <section class="home-widget home-season"><div class="home-widget-heading"><h2>PROGRESSO DA TEMPORADA</h2><span>2026</span></div><div class="home-season-stats"><div><b>${state?`${Math.min(state.week,14)}<small> / 14</small>`:'—'}</b><span>SEMANA</span></div><div><b>${state?.wins??0}</b><span>VITÓRIAS</span></div><div><b>${state?.losses??0}</b><span>DERROTAS</span></div><div><b>${winRate}%</b><span>APROVEIT.</span></div></div><div class="home-progress" role="progressbar" aria-label="Progresso da temporada" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(progress)}"><i style="width:${progress}%"></i></div></section>
+      <section class="home-widget home-season"><div class="home-widget-heading"><h2>PROGRESSO DA TEMPORADA</h2><span>2026</span></div><div class="home-season-stats"><div><b>${state?`${Math.min(state.week,totalWeeks)}<small> / ${totalWeeks}</small>`:'—'}</b><span>SEMANA</span></div><div><b>${state?.wins??0}</b><span>VITÓRIAS</span></div><div><b>${state?.losses??0}</b><span>DERROTAS</span></div><div><b>${winRate}%</b><span>APROVEIT.</span></div></div><div class="home-progress" role="progressbar" aria-label="Progresso da temporada" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(progress)}"><i style="width:${progress}%"></i></div></section>
       <section class="home-widget home-tasks"><div class="home-widget-heading"><h2>TAREFAS DO MANAGER <i>${tasks.filter(task=>!task.done).length}</i></h2></div><div class="home-task-list">${tasks.map(task=>`<button data-view="${task.view}"><span class="home-task-check ${task.done?'done':''}" aria-label="${task.done?'Concluída':'Pendente'}">${task.done?'✓':''}</span><span><b>${esc(task.title)}</b><small>${esc(task.description)}</small></span><span class="home-task-arrow" aria-hidden="true">›</span></button>`).join('')}</div></section>
       <section class="home-widget home-latest"><div class="home-widget-heading"><h2>ÚLTIMAS NOTÍCIAS</h2><button ${state?'data-view="mail"':'data-home-start'}>Ver todas</button></div><button class="home-news-story" ${state?'data-action="home-news"':'data-home-start'}><span class="home-news-image">${mark}</span><span><b>${esc(latest?.title||'Uma nova história no VCT')}</b><small>${state?`Semana ${Math.min(state.week,14)} · ${own.tag}`:'Comece sua carreira em 2026'}</small></span></button></section>
     </aside>

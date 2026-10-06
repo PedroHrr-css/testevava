@@ -4,7 +4,11 @@ export interface Navigation {
   columns: number; rows: number; cellSize: number;
   width: number; height: number; walk: number[];
 }
-export interface MatchPlayer { alias: string; agent: string }
+export interface MatchPlayer { alias: string; agent: string; role?:string; mapMastery?:Record<string,number>; agentMastery?:Record<string,number> }
+export interface ReplayTactic {
+  name:string; attack:string; defense:string;
+  pings?:{type:string;x:number;y:number}[];
+}
 export type MatchWeapon = 'classic' | 'vandal' | 'phantom' | 'operator';
 export interface CombatEvent {
   time: number; killer: number; victim: number; assist: number | null;
@@ -29,6 +33,7 @@ export interface SeriesMap {
 export interface WatchOptions {
   maps: SeriesMap[]; players: MatchPlayer[]; own: string; opponent: string;
   ownLogo?: string; opponentLogo?: string; competition?: string; stage?: string;
+  tactics?:Record<string,ReplayTactic>; mapMastery?:Record<string,number>;
   escape: (value: unknown) => string; onFinish: () => void;
 }
 export type VetoSlot = 'A' | 'B';

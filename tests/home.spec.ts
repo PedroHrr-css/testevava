@@ -1,15 +1,17 @@
 import {test,expect} from '@playwright/test';
 
-test('home connects onboarding, career actions, navigation and mobile layout',async({page})=>{
+for(const order of ['A','B'])test(`home connects onboarding and starts the correct map as team ${order}`,async({page})=>{
   const errors:string[]=[];
   page.on('pageerror',error=>errors.push(error.message));
   await page.emulateMedia({reducedMotion:'reduce'});
   await page.goto('/');
-  await expect(page.locator('#home-title')).toHaveText('VAVAMANAGER');
-  await expect(page.locator('.home-shortcut')).toHaveCount(4);
-  await expect(page.locator('.home-widget')).toHaveCount(4);
-  await page.screenshot({path:'test-results/home-initial-desktop.png',fullPage:true});
-  await page.locator('.home-continue').click();
+  await expect(page.locator('.intro-screen')).toBeVisible();
+  await expect(page.locator('.intro-option[data-start-view] > span')).toHaveText(['CONTINUAR CARREIRA','STATS','TIME','CONFIGURAÇÕES']);
+  await expect(page.locator('[data-open-demo]')).toBeVisible();
+  await expect(page.locator('[data-start-view="overview"]')).toBeDisabled();
+  await page.locator('[data-start-menu]').click();
+  await expect(page.locator('#home-title')).toHaveCount(0);
+  await expect(page.locator('#select-team')).toBeVisible();
   await page.locator('#select-team').click();
   await page.locator('#manager-name').fill('Pedro');
   await page.locator('#start').click();
@@ -41,14 +43,45 @@ test('home connects onboarding, career actions, navigation and mobile layout',as
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
   await page.locator('.home-icon-button[data-view="settings"]').click();
   await page.locator('[data-action="main-menu"]').click();
+  await expect(page.locator('.intro-screen')).toBeVisible();
+  await page.locator('[data-start-view="ranking"]').click();
+  await expect(page.locator('.ranking-tabs')).toBeVisible();
+  await page.locator('.home-icon-button[data-view="settings"]').click();
+  await page.locator('[data-action="main-menu"]').click();
+  await page.locator('[data-start-view="squad"]').click();
+  await expect(page.locator('.lineup-panel')).toBeVisible();
+  await page.locator('.home-icon-button[data-view="settings"]').click();
+  await page.locator('[data-action="main-menu"]').click();
+  await page.locator('[data-start-view="settings"]').click();
+  await expect(page.locator('[data-action="main-menu"]')).toBeVisible();
+  await page.locator('[data-action="main-menu"]').click();
+  await page.locator('[data-start-view="overview"]').click();
   await expect(page.locator('.home-profile b')).toHaveText('Pedro');
   await page.locator('.home-continue').click();
   await page.locator('[data-action="open-simulation"]').click();
   await page.locator('[data-action="advance-week"]').click();
   await expect(page.locator('.home-continue')).toContainText('DIA DE PARTIDA');
   await expect(page.locator('.home-career-status')).toContainText('DIA 7 / 7');
-  await page.locator('[data-close-simulation]').click();
-  await page.locator('.home-continue').click();
-  await expect(page.locator('[data-action="watch"]')).toBeEnabled();
+  await expect(page.locator('.home-simulation-dialog [data-action="watch"]')).toBeEnabled();
+  await page.locator('.home-simulation-dialog [data-action="watch"]').click();
+  await page.locator(`[data-order="${order}"]`).click();
+  for(let step=0;step<9;step++){
+    if(await page.locator('[data-start]').count())break;
+    if(await page.locator('[data-side="attack"]').count())await page.locator('[data-side="attack"]').click();
+    else await page.locator('[data-map]:not(:disabled)').first().click();
+  }
+  const firstMap=(await page.locator('.veto-series article > b').first().textContent())!.trim();
+  await page.locator('[data-start]').click();
+  await expect(page).toHaveURL(/#\/match$/);
+  await expect(page.locator('.match-loading')).toBeVisible();
+  await expect(page.locator('.match-loading h1')).toHaveText(firstMap.toUpperCase());
+  await expect(page.locator('.match-loading-image')).toHaveAttribute('src',`/assets/maps/${firstMap.toLowerCase()}-splash.jpg`);
+  await expect(page.locator('dialog[open]')).toHaveCount(0);
+  await expect(page.locator('.match-loading')).toBeHidden({timeout:30000});
+  await expect(page.locator('.sim-canvas canvas')).toBeVisible();
+  await expect(page.locator('.sim-canvas')).toHaveAttribute('data-environment',firstMap);
+  await page.locator('.sim-finish').click();
+  await expect(page).not.toHaveURL(/#\/match$/);
+  expect(await page.evaluate(()=>{const saved=JSON.parse(localStorage.getItem('tactical-career-v3')!);return saved.wins+saved.losses})).toBe(1);
   expect(errors).toEqual([]);
 });

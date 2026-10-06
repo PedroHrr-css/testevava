@@ -1,4 +1,4 @@
-﻿import {trainingHub} from './src/ui/training-hub.ts';
+import {trainingHub} from './src/ui/training-hub.ts';
 import {openTrainingSession} from './src/ui/training-session.ts';
 import {beginTraining, rewardTraining, type TrainingKind} from './src/game/training.ts';
 import {openMapVeto} from './map-veto.ts';
@@ -24,6 +24,7 @@ import {genericPortrait,academyPortraitIndex,assignAcademyPortraits} from './src
 import {ensureTransferMarket,playerSaleValue,buyPlayer,sellPlayer,transferStaff} from './src/game/transfers.ts';
 import {buyShopItem,shopBonuses,effectiveStaffQuality,scoutingReportCost,academyTrainingGain} from './src/game/shop.ts';
 import {shopView,type ShopFilter} from './src/ui/shop-view.ts';
+import {DEMO_WEEKS,demoFinished} from './src/game/progression.ts';
 import rawRosterData from './rosters.json';
 import rawTeamData from './teams.json';
 import rawMapStats from './mapStats.json';
@@ -51,7 +52,8 @@ const DEFENSES=[['default','Padrão'],['aggressive','Pressão inicial'],['retake
 const TEAMS: Team[] = rawTeamData;
 const REGIONS = ['AMERICAS','EMEA','PACIFIC','CHINA'];
 const ROLE = ['Duelista','Iniciador','Controlador','Sentinela','Flex'];
-const KEY = 'tactical-career-v3';
+const DEMO_MODE=typeof location!=='undefined'&&new URLSearchParams(location.search).get('demo')==='1';
+const KEY = DEMO_MODE?'tactical-demo-v1':'tactical-career-v3';
 const $ = <T extends HTMLElement = HTMLInputElement>(q: string) => document.querySelector<T>(q)!;
 const esc = (s: unknown) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
 const cash = (n: number) => `$ ${Number(n).toLocaleString('pt-BR')} mil`;
@@ -67,6 +69,7 @@ let marketFeedback='';
 let shopFilter:ShopFilter='all',shopFeedback='';
 let mailFolder: 'all'|'general'|'sponsor'|'player'|'transfer'|'streamer'='all', selectedMailId:string|null=null;
 let mailQuery='',mailReadingOpen=false;
+let startOpen=true;
 let introOpen=true;
 const MANAGER_AVATARS=['male','woman','cap','glasses','woman-alt'];
 let createAvatar='male';
@@ -97,7 +100,7 @@ function newState(id: string,manager: string,difficulty: string): CareerState{
   const market=Array.from({length:Math.min(18,candidates.length)},(_,i)=>candidates[Math.floor(i*candidates.length/Math.min(18,candidates.length))]);
   return {team:id,manager,managerAvatar:createAvatar,managerBackground:background.id,managerContract:{weeksRemaining:28,weeklySalary:background.id==='creator'?55:70},difficulty,week:1,day:1,money:background.money,fans:background.fans,points:0,wins:0,losses:0,players:all,market,kit:'home',focus:'team',trainingMap:'Ascent',mapMastery:Object.fromEntries(MAP_IDS.map(m=>[m,background.id==='rookie-coach'?51:48])),trainingPlayer:all[0].id,captain:all[0].id,tactics:[],activeTactics:{},scoutReports:{},staff:[],academyLevel:1,academyProspects:createAcademyProspects(id,team(id).power),inviteResponses:{},tournamentResults:[],emails:[{id:'welcome-mail',from:'Direção do Clube',address:'direcao@tactical.gg',subject:`Bem-vindo ao ${team(id).name}`,preview:'Sua temporada começa agora.',body:`Olá, ${manager}.\n\nA diretoria deseja uma ótima temporada. Use esta caixa para acompanhar os convites, o elenco, os patrocinadores e o mercado de transferências.\n\nBoa sorte no comando!`,category:'general',week:1,read:false}],log:[{kind:'info',title:'Carreira iniciada',body:`${manager} assumiu o comando da ${team(id).name} como ${background.name}. Contrato inicial: 28 semanas.`}],lastMatch:null};
 }
-if (!state) {
+if (!state&&!DEMO_MODE) {
   try {
     const old=JSON.parse(localStorage.getItem('tactical-career-v2') || 'null');
     const id=TEAMS.find(t=>t.name===old?.team)?.id;
@@ -206,6 +209,7 @@ function renderPage(): string {
   return (pages[view]??comingSoon)();
 }
 function render(): void {
+  if(startOpen)return renderStart();
   if(introOpen)return renderIntro();
   if (!state) return renderCreate();
   ensureSystems();
@@ -226,6 +230,7 @@ function render(): void {
   bindCalendar();
   const simulationDialog=document.querySelector<HTMLDialogElement>('.home-simulation-dialog');if(simulationDialog)simulationDialog.querySelector<HTMLElement>('.home-simulation-body')!.innerHTML=homeSimulation();
   document.querySelectorAll<HTMLElement>('[data-action]').forEach(el=>el.onclick=()=>action(el.dataset.action!,el.dataset.id!));
+  const demoFeedback=$<HTMLTextAreaElement>('#demo-feedback');if(demoFeedback)demoFeedback.oninput=()=>{if(career().demo){career().demo!.feedback=demoFeedback.value;save()}};
   document.querySelectorAll<HTMLElement>('[data-mail-folder]').forEach(el=>el.onclick=()=>{mailFolder=el.dataset.mailFolder as typeof mailFolder;selectedMailId=null;mailQuery='';mailReadingOpen=false;render()});
   document.querySelectorAll<HTMLElement>('[data-mail-id]').forEach(el=>el.onclick=()=>{selectedMailId=el.dataset.mailId!;mailReadingOpen=true;const message=career().emails?.find(item=>item.id===selectedMailId);if(message)message.read=true;save();render()});
   const mailSearch=$<HTMLInputElement>('#mail-search');if(mailSearch)mailSearch.oninput=()=>{
@@ -260,7 +265,19 @@ function render(): void {
   const numberInput=$('#shirt-number'); if(numberInput) numberInput.onchange=e=>{const p=career().players.find(x=>x.id===selected),n=Number((e.target as HTMLInputElement).value);if(p&&Number.isInteger(n)&&n>=1&&n<=99&&!career().players.some(x=>x!==p&&x.number===n)){p.number=n;save();render()}else{(e.target as HTMLInputElement).value=String(p?.number??'');alert('Escolha um número entre 1 e 99 que não esteja em uso.')}};
   $('.sidebar .nav-link.active')?.scrollIntoView({block:'nearest',inline:'nearest'});
 }
+function renderStart(): void {
+  $('#app').innerHTML=`<section class="intro-screen" aria-label="Menu inicial"><div class="intro-shade" aria-hidden="true"></div><div class="intro-grid" aria-hidden="true"></div><header class="intro-top"><div class="intro-brand"><span class="intro-mark" aria-hidden="true">V</span><h1>VAVA<em>MANAGER</em></h1></div></header><div class="intro-rail" aria-hidden="true"><i></i><span>◆</span><i></i></div><nav class="intro-menu" aria-label="Iniciar jogo"><p class="intro-kicker">${DEMO_MODE?'DEMO / 4 PARTIDAS · TODOS OS MENUS':'VCT / TEMPORADA 2026'}</p><button type="button" class="intro-start" data-start-menu><span>START</span><b aria-hidden="true">→</b></button>${DEMO_MODE?'<button type="button" class="intro-option" data-open-career><i aria-hidden="true">↗</i><span>CARREIRA COMPLETA</span></button>':'<button type="button" class="intro-option" data-open-demo><i aria-hidden="true">◇</i><span>JOGAR DEMO</span><small>4 PARTIDAS</small></button>'}${([{view:"overview",label:DEMO_MODE?"CONTINUAR DEMO":"CONTINUAR CARREIRA",icon:"▷"},{view:"ranking",label:"STATS",icon:"▤"},{view:"squad",label:"TIME",icon:"▦"},{view:"settings",label:"CONFIGURAÇÕES",icon:"⚙"}] as const).map(item=>`<button type="button" class="intro-option" data-start-view="${item.view}" ${state?"":"disabled"}><i aria-hidden="true">${item.icon}</i><span>${item.label}</span></button>`).join("")}</nav><span class="intro-side-label" aria-hidden="true">VALORANT / MANAGER</span><footer class="intro-footer"><span aria-hidden="true"></span><small>ASSUMA O COMANDO.</small><b>VCT 2026<br>VAVA MANAGER</b></footer></section>`;
+  $('[data-start-menu]').onclick=()=>{startOpen=false;introOpen=false;view='overview';if(!state)createStep='team';render();window.scrollTo(0,0)};
+  const modeButton=$('[data-open-demo]');if(modeButton)modeButton.onclick=()=>{const url=new URL(location.href);url.hash='';url.searchParams.set('demo','1');location.href=url.href};
+  const fullButton=$('[data-open-career]');if(fullButton)fullButton.onclick=()=>{const url=new URL(location.href);url.hash='';url.searchParams.delete('demo');location.href=url.href};
+  document.querySelectorAll<HTMLButtonElement>('[data-start-view]').forEach(button=>button.onclick=()=>{
+    if(!state)return;
+    startOpen=false;introOpen=false;view=button.dataset.startView as View;
+    render();window.scrollTo(0,0);
+  });
+}
 function renderIntro(): void {
+  if(!state){startOpen=true;return renderStart()}
   if(state)ensureSystems();
   const own=team(state?.team||createTeam);
   const portraits=(state?.players.slice(0,3)||rosterData[own.id].players.slice(0,3).map((raw,i)=>makePlayer(own.id,raw,i))).map(player=>photo(player)).join('');
@@ -324,7 +341,7 @@ function renderCreate():void{
       openManagerContract(name);
     };
   }
-  $('[data-create-home]').onclick=()=>{introOpen=true;render();window.scrollTo(0,0)};
+  $('[data-create-home]').onclick=()=>{startOpen=true;introOpen=true;render();window.scrollTo(0,0)};
 }
 function refreshCreate(focusSelector:string):void{
   const scrollY=window.scrollY;renderCreate();
@@ -351,6 +368,7 @@ function openManagerContract(name:string):void{
     window.setTimeout(()=>{
       state=newState(club.id,name,'normal');state.managerNationality=createCountry;
       state.managerContract!.signedAt='2026-01-01';
+      if(DEMO_MODE){state.demo={version:1};state.inviteResponses={tixinha:'accepted',homeground:'accepted'}}
       const welcome=state.emails!.find(message=>message.id==='welcome-mail')!;
       welcome.from=`Diretoria · ${club.name}`;welcome.address=`diretoria@${club.tag.toLowerCase()}.vava.game`;
       welcome.subject=`Bem-vindo à sua nova casa, ${name}!`;
@@ -384,6 +402,7 @@ function market(){
 }
 function training(){return trainingHub(career(),MAPS,esc)}
 function tournamentActions(){
+  if(demoFinished(career()))return '<span class="tag">DEMO CONCLUÍDA · 4 PARTIDAS</span><button class="primary" data-view="overview">VER BALANÇO →</button>';
   if(career().week>14)return '<span class="tag">TEMPORADA ENCERRADA</span>';
   const access=tournamentAccess(career(),tournamentRound(career().week));
   const day=career().day||1;
@@ -393,8 +412,8 @@ function tournamentActions(){
   return '<button class="primary" data-action="advance-day">AVANÇAR PARA A PRÓXIMA SEMANA ↗</button>';
 }
 function hasPlayedThisWeek(){return (career().tournamentResults||[]).some(result=>result.week===career().week)}
-function canPlayToday(){return career().week<=14&&career().day===7&&canPlayTournament(career())&&!hasPlayedThisWeek()}
-function canAdvanceDay(){const day=career().day||1;if(career().week>14)return false;if(day<7)return true;const access=tournamentAccess(career(),tournamentRound(career().week));return access!=='invite'&&(!canPlayTournament(career())||hasPlayedThisWeek())}
+function canPlayToday(){return !demoFinished(career())&&career().week<=(career().demo?DEMO_WEEKS:14)&&career().day===7&&canPlayTournament(career())&&!hasPlayedThisWeek()}
+function canAdvanceDay(){const day=career().day||1;if(career().week>14||demoFinished(career()))return false;if(day<7)return true;const access=tournamentAccess(career(),tournamentRound(career().week));return access!=='invite'&&(!canPlayTournament(career())||hasPlayedThisWeek())}
 function homeCalendar(){
   const day=career().day||1,date=careerDate(career().week,day);
   calendarMonth ||= new Date(Date.UTC(date.getUTCFullYear(),date.getUTCMonth(),1));
@@ -512,7 +531,13 @@ function competition(){
   const accessText=access==='invite'?'Convite recebido. Aceite para disputar ou recuse para seguir a temporada.':access==='locked'?`Sem classificação: ${current.requirement}. Avance para a próxima etapa.`:access==='qualified'?'Vaga conquistada pelos resultados regionais.':access==='accepted'?'Convite aceito. Seu time está inscrito.':access==='regional'?'Etapa regional aberta para todos os clubes.':'';
   return `<div class="page-title"><div><small class="eyebrow">CIRCUITO COMPETITIVO</small><h1>RUMO AO <em>TOPO.</em></h1><p>Os campeonatos são anunciados conforme a temporada avança. Convites são opcionais; torneios mundiais exigem classificação.</p></div><div class="overall-box"><small>PONTOS</small><b>${career().points}</b></div></div><section class="panel tournament-highlight"><div><small class="eyebrow">ETAPA ATUAL · SEMANA ${Math.min(career().week,14)}</small><h2>${career().week>14?'Temporada encerrada':esc(current.name)}</h2><p>${career().week>14?'Confira os resultados da sua campanha.':`${esc(current.phase)} · ${accessText} ${canPlayTournament(career())?`Vitória: ${cash(current.winPrize)} e ${current.winPoints} pontos.`:''}`}</p></div>${tournamentActions()}</section><div class="overview-grid"><section class="panel"><div class="panel-head"><h2>Calendário revelado</h2><span class="tag">SEMANA ${Math.min(career().week,14)} / 14</span></div><div class="schedule">${rows}${career().week<=14?'<div class="schedule-row tournament-row"><span>EM BREVE</span><span class="tournament-fixture"><b>Próxima etapa</b><small>Revelada após esta semana</small></span></div>':''}</div></section><section class="panel"><div class="panel-head"><h2>Classificação regional</h2><span class="tag">VCT ${team(career().team).region}</span></div><div class="schedule">${standings}</div><div class="data-note">Somente rodadas regionais contam nesta tabela. Pontuações dos rivais são simuladas. Critérios e premiações desta carreira são fictícios.</div></section></div>`;
 }function action(type: string,id=''){
-  if(type==='main-menu'){calendarStop=true;introOpen=true;render();window.scrollTo(0,0);return}
+  if(type==='confirm-demo-lineup'&&career().demo){career().demo!.lineupConfirmed=true;save();render();return}
+  if(type==='export-demo-feedback'&&career().demo){
+    const payload={version:1,completedAt:career().demo!.completedAt,feedback:career().demo!.feedback??'',matches:career().tournamentResults?.map(result=>({week:result.week,score:result.score,win:result.win})),trainingSessions:career().trainingHistory?.length??0,tactics:career().tactics.length};
+    const url=URL.createObjectURL(new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}));
+    const link=document.createElement('a');link.href=url;link.download='vava-manager-demo-feedback.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);return;
+  }
+  if(type==='main-menu'){calendarStop=true;startOpen=true;introOpen=true;render();window.scrollTo(0,0);return}
   if(type==='home-news'){const latest=career().log[0];if(latest)homeDialog(latest.title,latest.body);return}
   if(type==='manager-profile'){homeDialog(career().manager,`${team(career().team).name} · Manager · ${career().managerContract?.weeksRemaining??0} semanas de contrato restantes. Orçamento do clube: ${cash(career().money)}. Torcida: ${career().fans.toLocaleString('pt-BR')} fãs.`);return}
 
@@ -529,7 +554,7 @@ function competition(){
     }else shopFeedback=result.error;
   }
   if(type==='advance-day'||type==='advance-week'){void runCalendar(type==='advance-week');return}
-  if(type==='reset'){if(confirm('Reiniciar a carreira e apagar o progresso local?')){localStorage.removeItem(KEY);localStorage.removeItem('tactical-career-v2');state=null;calendarMonth=null;calendarSelected='';calendarFeedback='';view='overview';render()}return}
+  if(type==='reset'){if(confirm('Reiniciar a carreira e apagar o progresso local?')){localStorage.removeItem(KEY);if(!DEMO_MODE)localStorage.removeItem('tactical-career-v2');state=null;calendarMonth=null;calendarSelected='';calendarFeedback='';view='overview';render()}return}
   if(type==='accept-invite'||type==='decline-invite')calendarFeedback='';
   if(type==='accept-invite'&&career().week<=14){const round=tournamentRound(career().week);if(tournamentAccess(career(),round)==='invite'){(career().inviteResponses ||= {})[round.id]='accepted';career().log.unshift({kind:'info',title:'Convite aceito',body:`${team(career().team).name} confirmou presença no ${round.name}.`})}}
   if(type==='decline-invite'&&career().week<=14){const round=tournamentRound(career().week);if(tournamentAccess(career(),round)==='invite'){(career().inviteResponses ||= {})[round.id]='declined';career().log.unshift({kind:'info',title:'Convite recusado',body:`O clube não disputará o ${round.name}.`})}}
@@ -627,6 +652,7 @@ function competition(){
     }else{marketFeedback=result.error;homeDialog('Contratação indisponível',result.error)}
   }
   if(['watch','simulate'].includes(type)&&canPlayToday()){
+    document.querySelectorAll<HTMLDialogElement>('.home-simulation-dialog[open],.team-calendar-dialog[open]').forEach(dialog=>dialog.close());
     openMapVeto({own:team(career().team).tag,opponent:opponent().tag,preferred:preferredMaps(opponent().id),trainingMap:career().trainingMap,mastery:career().mapMastery,escape:esc,onStart:veto=>{
       simulateSeries(type==='watch',veto);
       if(type!=='watch'){ensureSystems();save();render()}
@@ -638,7 +664,7 @@ function competition(){
 function simulateSeries(watch=false,veto: Veto | null=null){
   const event=tournamentRound(career().week);
   const ownPlayers=starters().map(p=>({...p}));
-  const enemyPlayers=rosterData[opponent().id].players.slice(0,5).map((p,i)=>({...p,agent:agentsData.find(a=>a.role===ROLE[i])?.id||agentsData[i].id}));
+  const enemyPlayers=rosterData[opponent().id].players.slice(0,5).map((p,i)=>({...p,role:ROLE[i],agent:agentsData.find(a=>a.role===ROLE[i])?.id||agentsData[i].id}));
   const units=[...ownPlayers,...enemyPlayers];
   const o=opponent(),maps=veto?veto.maps.map(entry=>entry.map):matchMaps(o.id),energy=starters().reduce((n,p)=>n+p.energy,0)/5;
   const coverage=roleCoverage(),captain=starters().find(p=>p.id===career().captain);
@@ -667,6 +693,7 @@ function simulateSeries(watch=false,veto: Veto | null=null){
   career().wins+=Number(win);career().losses+=Number(!win);career().points+=earnedPoints;
   career().money+=(win?210:95)+prize;career().fans+=win?4200:700;
   (career().tournamentResults ||= []).push({week:career().week,eventId:event.id,eventName:event.name,opponentId:o.id,win,score,prize,points:earnedPoints});
+  if(demoFinished(career())){career().demo!.completedAt=new Date().toISOString();view='overview'}
   career().lastMatch={opp:o.name,score,win,eventName:event.name,veto:veto?structuredClone(veto):null,maps:results.map(({map,win,simulation,ownStartsAttack})=>({map,win,ownStartsAttack,score:simulation.score}))};
   career().log.unshift({kind:win?'win':'loss',title:`${team(career().team).tag} ${score} ${o.tag}`,body:`${results.map(r=>`${r.map} ${r.win?'V':'D'}`).join(' · ')}. ${win?'Vitória e +3 pontos.':'Derrota na série.'}`});
   career().players.slice(0,5).forEach((p,index)=>{
@@ -692,7 +719,7 @@ function simulateSeries(watch=false,veto: Veto | null=null){
     addMail({id:`offer-${career().week}-${reserve.id}`,from:`${buyer.name} · Diretoria`,address:'scouting@vct.tactical',subject:`Proposta oficial por ${reserve.alias}`,preview:`Oferta de ${cash(fee)} pelo atleta reserva.`,body:`Olá, ${career().manager}.\n\nO ${buyer.name} gostaria de contratar ${reserve.alias} por ${cash(fee)}. A proposta é válida nesta semana. Você pode aceitar a venda ou manter o atleta no elenco.`,category:'transfer',offer:{playerId:reserve.id,fee,status:'pending'}});
   }
   };
-  if(watch)watchSeries({maps:results,players:units,own:team(career().team).tag,opponent:o.tag,ownLogo:`/assets/${career().team}.png`,opponentLogo:`/assets/${o.id}.png`,competition:`VCT ${team(career().team).region}`,stage:`TEMPORADA · SEMANA ${career().week}`,escape:esc,onFinish:()=>{finish();ensureSystems();save();render()}});
+  if(watch)watchSeries({maps:results,players:units,tactics:Object.fromEntries(results.flatMap(result=>{const tactic=activeTactic(result.map);return tactic?[[result.map,structuredClone(tactic)]]:[]})),mapMastery:{...career().mapMastery},own:team(career().team).tag,opponent:o.tag,ownLogo:`/assets/${career().team}.png`,opponentLogo:`/assets/${o.id}.png`,competition:`VCT ${team(career().team).region}`,stage:`TEMPORADA · SEMANA ${career().week}`,escape:esc,onFinish:()=>{finish();ensureSystems();save();render()}});
   else finish();
 }
 

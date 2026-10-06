@@ -4,6 +4,7 @@ import type { MatchPlayer, Navigation, Point, Round } from '../types/game.ts';
 import { clearSight } from './navigation.ts';
 import { buildWalls, planFloor, safeCameraPosition, WALL_HEIGHT, worldPoint, type FloorGrid } from './arena-geometry.ts';
 import { createPlayerModel } from './player-model.ts';
+import { createMapEnvironment } from './map-environment.ts';
 
 const COLORS = [0xff4655, 0x65d5b5];
 const OVERVIEW = new THREE.Vector3(66, 92, 90);
@@ -13,6 +14,7 @@ export interface RenderFrame {
   positions: Point[]; headings: Point[]; dead: Set<number>; anchor: Point; navigation: Navigation;
 }
 export interface MatchRenderer {
+  prepare: (map:string) => Promise<void>;
   draw: (frame: RenderFrame) => void;
   zoom: (amount: number) => void;
   follow: (player: number | null) => void;
@@ -64,7 +66,7 @@ export function createMatchRenderer(parent: HTMLElement, maps: string[], players
   const webgl = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
   webgl.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
   webgl.outputColorSpace = THREE.SRGBColorSpace;
-  webgl.toneMapping = THREE.ACESFilmicToneMapping; webgl.toneMappingExposure = 1.25;
+  webgl.toneMapping = THREE.ACESFilmicToneMapping; webgl.toneMappingExposure = 1.05;
   webgl.shadowMap.enabled = true; webgl.shadowMap.type = THREE.PCFSoftShadowMap;
   webgl.domElement.setAttribute('aria-hidden', 'true');
   parent.append(webgl.domElement); parent.dataset.renderer = 'three'; parent.dataset.cameraMode = mode;
@@ -80,16 +82,17 @@ export function createMatchRenderer(parent: HTMLElement, maps: string[], players
     if (mode === 'tactical') overviewTransition = true;
   };
   const observer = new ResizeObserver(resize); observer.observe(parent); resize();
-  scene.add(new THREE.HemisphereLight(0xb7d8ff, 0x263545, 2.1));
-  const sun = new THREE.DirectionalLight(0xffe4c1, 3.2); sun.position.set(-35, 65, 25);
+  const ambient=new THREE.HemisphereLight(0xb7d8ff, 0x7b8c83, 2);scene.add(ambient);
+  const sun = new THREE.DirectionalLight(0xffe4c1, 2.4); sun.position.set(-35, 65, 25);
   sun.castShadow = true; sun.shadow.mapSize.set(1024, 1024);
   Object.assign(sun.shadow.camera, { left: -60, right: 60, top: 60, bottom: -60, near: 1, far: 140 });
   sun.shadow.bias = -.0008; scene.add(sun);
-  const rim = new THREE.DirectionalLight(0x70b7ff, 1.5); rim.position.set(40, 25, -45); scene.add(rim);
+  const rim = new THREE.DirectionalLight(0x70b7ff, .8); rim.position.set(40, 25, -45); scene.add(rim);
   const base = new THREE.Mesh(new THREE.BoxGeometry(108, .9, 108), new THREE.MeshStandardMaterial({ color: 0x132330, roughness: .7, metalness: .35 }));
   base.position.y = -.6; base.receiveShadow = true; scene.add(base);
   const grid = new THREE.GridHelper(108, 36, 0x376277, 0x1e3747); grid.position.y = -.13; scene.add(grid);
   const arena = new THREE.Group(); scene.add(arena);
+  let environment:ReturnType<typeof createMapEnvironment>|null=null;
   let walls: THREE.InstancedMesh | null = null;
   const units = players.map((player, id) => {
     const model = createPlayerModel(COLORS[id < 5 ? 0 : 1], id, player.agent, player.alias);
@@ -116,14 +119,32 @@ export function createMatchRenderer(parent: HTMLElement, maps: string[], players
   const gunBarrel = new THREE.Mesh(new THREE.BoxGeometry(.055, .055, .3), gunMaterial); gunBarrel.position.set(.24, -.14, -.8);
   viewGun.add(gunBody, gunBarrel); viewGun.visible = false; camera.add(viewGun);
   const textures = new Map<string, THREE.Texture>(), loader = new THREE.TextureLoader();
-  const ready = Promise.all([...new Set(maps)].map(async map => {
-    const texture = await loader.loadAsync(`/assets/maps/${map.toLowerCase()}-plan.png`);
-    if (disposed) { texture.dispose(); return; }
-    texture.colorSpace = THREE.SRGBColorSpace; texture.anisotropy = Math.min(4, webgl.capabilities.getMaxAnisotropy());
-    textures.set(map, texture);
-  })).then(() => { if (!disposed) webgl.render(scene, camera); });
+  const pendingTextures=new Map<string,Promise<void>>();
+  function prepare(map:string):Promise<void>{
+    if(textures.has(map))return Promise.resolve();
+    if(pendingTextures.has(map))return pendingTextures.get(map)!;
+    const pending=loader.loadAsync(`/assets/maps/${map.toLowerCase()}-plan.png`).then(texture=>{
+      if(disposed){texture.dispose();return}
+      texture.colorSpace=THREE.SRGBColorSpace;texture.anisotropy=Math.min(4,webgl.capabilities.getMaxAnisotropy());
+      textures.set(map,texture);
+    }).finally(()=>pendingTextures.delete(map));
+    pendingTextures.set(map,pending);return pending;
+  }
+  // A later map must not hold the opening map's loading screen hostage.
+  const ready=prepare(maps[0]).then(()=>{if(!disposed)webgl.render(scene,camera)});
 
   function loadArena(map: string) {
+    if(environment){scene.remove(environment.group);environment.dispose()}
+    environment=createMapEnvironment(map);scene.add(environment.group);scene.background=environment.sky;
+    const theme=environment.theme;
+    scene.fog=new THREE.Fog(theme.horizon,180,390);
+    ambient.color.set(theme.horizon);ambient.groundColor.set(theme.ground);
+    sun.color.set(theme.sun);rim.color.set(theme.sky);
+    (base.material as THREE.MeshStandardMaterial).color.set(theme.ground);
+    (base.material as THREE.MeshStandardMaterial).map=environment.terrainTexture;
+    base.material.needsUpdate=true;
+    grid.visible=false;
+    parent.dataset.environment=map;
     disposeObjects(arena); arena.clear();
     const texture = textures.get(map);
     if (!texture) throw new Error('Map texture unavailable');
@@ -135,12 +156,12 @@ export function createMatchRenderer(parent: HTMLElement, maps: string[], players
     const ground = new THREE.Mesh(new THREE.PlaneGeometry(100, 100), new THREE.MeshStandardMaterial({ map: texture, color: 0xc1d0d5, transparent: true, alphaTest: .05, roughness: .94 }));
     ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; arena.add(ground);
     const segments = buildWalls(floor);
-    walls = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshStandardMaterial({ color: 0x648391, metalness: .18, roughness: .75 }), segments.length);
+    walls = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: .05, roughness: .85 }), segments.length);
     const matrix = new THREE.Matrix4(), rotation = new THREE.Quaternion();
     segments.forEach((wall, index) => {
       matrix.compose(new THREE.Vector3(wall.x, WALL_HEIGHT / 2, wall.z), rotation, new THREE.Vector3(wall.width, WALL_HEIGHT, wall.depth));
       walls!.setMatrixAt(index, matrix);
-      walls!.setColorAt(index, new THREE.Color(index % 4 === 0 ? 0x7698a7 : 0x547381));
+      walls!.setColorAt(index, new THREE.Color(theme.stone).lerp(new THREE.Color(theme.accent),index%4===0?.22:0));
     });
     walls.instanceMatrix.needsUpdate = true;
     walls.castShadow = true; walls.receiveShadow = true; arena.add(walls);
@@ -308,6 +329,7 @@ export function createMatchRenderer(parent: HTMLElement, maps: string[], players
   return {
     ready,
     renderer: {
+      prepare,
       draw,
       zoom: amount => { zoom = THREE.MathUtils.clamp(amount, 1, 3); if (mode === 'tactical') overviewTransition = true; },
       follow: id => {
@@ -322,6 +344,7 @@ export function createMatchRenderer(parent: HTMLElement, maps: string[], players
         webgl.domElement.removeEventListener('pointermove', onPointerMove);
         webgl.domElement.removeEventListener('pointerup', onPointerUp);
         webgl.domElement.removeEventListener('pointercancel', onPointerCancel);
+        if(environment){scene.remove(environment.group);environment.dispose();scene.background=null;(base.material as THREE.MeshStandardMaterial).map=null}
         disposeObjects(scene, true); textures.forEach(texture => texture.dispose());
         sun.shadow.map?.dispose(); webgl.dispose(); webgl.forceContextLoss(); webgl.domElement.remove();
       },

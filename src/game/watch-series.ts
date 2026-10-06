@@ -1,4 +1,4 @@
-import { roundPaths, pathPosition } from './navigation.ts';
+import {planRoundMovement,tacticalPosition,type TacticalRoute} from './tactical-movement.ts';
 import type { WatchOptions, Navigation } from '../types/game.ts';
 import { MatchAudio } from './match-audio.ts';
 import {broadcastLayout, killFeedRow, weaponIcon, objectiveIcon} from '../ui/match-broadcast.ts';
@@ -10,11 +10,16 @@ export function watchSeries(options: WatchOptions) {
   const {maps,players,own,opponent,escape,onFinish}=options;
   const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
   const overlay = document.createElement('div');
-  overlay.className='match-overlay broadcast-overlay';
+  overlay.className='match-page broadcast-overlay';
   overlay.innerHTML=broadcastLayout(options);
-  const previousOverflow=document.body.style.overflow;
-  document.body.style.overflow='hidden';
-  document.body.append(overlay);
+  const root=document.getElementById('app')!;
+  const previousPage=[...root.childNodes];
+  const previousURL=location.href;
+  const previousTitle=document.title;
+  root.replaceChildren(overlay);
+  history.pushState({match:true},'', '#/match');
+  document.title=`${own} × ${opponent} | Partida assistida`;
+  window.scrollTo(0,0);
   const q = <T extends HTMLElement = HTMLElement>(selector: string): T => {
     const element = overlay.querySelector<T>(selector);
     if (!element) throw new Error(`Controle ausente: ${selector}`);
@@ -26,8 +31,40 @@ export function watchSeries(options: WatchOptions) {
   let selectedPlayer: number | null = null, cameraMode: CameraMode = 'tactical';
   let lastDead = new Set<number>();
   const audio = new MatchAudio();
+  let loadingTimer:ReturnType<typeof setTimeout>|undefined;
+  let loadingStarted=0;
+  let splashReady:Promise<void>=Promise.resolve();
+  const loading=document.createElement('section');
+  loading.className='match-loading';
+  loading.setAttribute('aria-label','Carregamento do mapa');
+  overlay.append(loading);
   let score=[0,0], series=[0,0], totals=players.map(()=>({kills:0,deaths:0,assists:0}));
-  const finish=()=>{if(finished)return;finished=true;cancelAnimationFrame(frame);renderer?.destroy();audio.destroy();overlay.remove();document.body.style.overflow=previousOverflow;onFinish();if(previousFocus?.isConnected)previousFocus.focus();};
+  const finish=()=>{if(finished)return;finished=true;cancelAnimationFrame(frame);clearTimeout(loadingTimer);window.removeEventListener('popstate',finish);renderer?.destroy();audio.destroy();root.replaceChildren(...previousPage);history.replaceState(null,'',previousURL);document.title=previousTitle;onFinish();if(previousFocus?.isConnected)previousFocus.focus();};
+  window.addEventListener('popstate',finish);
+  function showLoading(){
+    loadingStarted=performance.now();
+    const map=maps[mapIndex].map;
+    loading.dataset.map=map;
+    loading.hidden=false;
+    q('.match-viewer').inert=true;
+    overlay.classList.add('is-loading');
+    loading.innerHTML=`<img class="match-loading-image" src="/assets/maps/${encodeURIComponent(map.toLowerCase())}-splash.jpg" alt="${escape(map)}"><div class="match-loading-grid" aria-hidden="true"></div><header><span>VCT / PARTIDA ASSISTIDA</span><button type="button" data-loading-skip>PULAR PARA RESULTADO ↗</button></header><div class="match-loading-title"><small>MAPA ${mapIndex+1} / ${maps.length}</small><h1>${escape(map.toUpperCase())}</h1><p>${escape(own)} <span>VS</span> ${escape(opponent)}</p><ol class="match-loading-series" aria-label="Ordem dos mapas">${maps.map((entry,index)=>`<li ${index===mapIndex?'aria-current="step"':''}><small>MAPA ${index+1}</small><b>${escape(entry.map.toUpperCase())}</b></li>`).join('')}</ol></div><footer><span class="match-loading-symbol" aria-hidden="true">◇</span><div><b role="status">CARREGANDO MAPA</b><div class="match-loading-track" aria-hidden="true"><i></i></div></div><small>PREPARANDO O CAMPO DE BATALHA</small></footer>`;
+    loading.querySelector<HTMLElement>('[data-loading-skip]')!.onclick=finish;
+    const splash=loading.querySelector<HTMLImageElement>('img')!;
+    splash.onerror=()=>{splash.style.display='none'};
+    splashReady=splash.decode().catch(()=>{});
+  }
+  async function enterMap(){
+    await Promise.all([renderer?.prepare(maps[mapIndex].map),splashReady]);
+    if(finished)return;
+    await new Promise<void>(resolve=>{loadingTimer=setTimeout(resolve,Math.max(0,1900-(performance.now()-loadingStarted)))});
+    if(finished)return;
+    startRound();
+    loading.hidden=true;overlay.classList.remove('is-loading');q('.match-viewer').inert=false;
+    q('.match-viewer').focus();
+    last=performance.now();frame=requestAnimationFrame(draw);
+  }
+  showLoading();
   q('.sim-finish').onclick=finish;
   q('.sim-event-filter').onclick=()=>{
     const button=q('.sim-event-filter'), expanded=button.getAttribute('aria-pressed')!=='true';
@@ -100,10 +137,9 @@ export function watchSeries(options: WatchOptions) {
   q<HTMLInputElement>('.sim-zoom').oninput=()=>renderer?.zoom(Number(q<HTMLInputElement>('.sim-zoom').value));
   overlay.addEventListener('keydown',e=>{
     if(e.key==='Escape'){paused=true;q('.sim-pause').textContent='CONTINUAR';}
-    if(e.key==='Tab') {const items=[...overlay.querySelectorAll<HTMLElement>('button:not(:disabled),select:not(:disabled),input:not(:disabled),summary')].filter(item=>item.getClientRects().length>0&&(!item.closest('details:not([open])')||item.matches('summary')));const i=items.indexOf(document.activeElement as HTMLElement);e.preventDefault();items[(i+(e.shiftKey?-1:1)+items.length)%items.length]?.focus();}
   });
-  q('.match-viewer').focus();
-  let applied=0, navigation: Record<string, Navigation>={}, routes: number[][]=[], spikeDeathsApplied=false, objectiveEvents=new Set<string>();
+  loading.querySelector<HTMLButtonElement>('button')!.focus();
+  let applied=0, navigation: Record<string, Navigation>={}, routes:TacticalRoute[]=[], spikeDeathsApplied=false, objectiveEvents=new Set<string>();
   function addEvent(label:string,side:number,objective=false){
     overlay.querySelector('.broadcast-event-empty')?.remove();
     const seconds=Math.max(0,Math.ceil((maps[mapIndex].simulation.rounds[roundIndex].resolveAt-elapsed)/REPLAY_TIME_SCALE));
@@ -132,7 +168,10 @@ export function watchSeries(options: WatchOptions) {
     }).join('');
     overlay.querySelector<HTMLImageElement>('.sim-minimap img')!.src=`/assets/maps/${map.map.toLowerCase()}-plan.png`;
     q('.sim-minimap-name').textContent=map.map.toUpperCase();overlay.querySelector<HTMLImageElement>('.sim-plan-view > img')!.src=`/assets/maps/${map.map.toLowerCase()}-plan.png`;
-    routes=roundPaths(navigation[map.map.toLowerCase()],map.map,map.simulation.rounds[roundIndex],(roundIndex<12)===(map.ownStartsAttack!==false));
+    const tactic=options.tactics?.[map.map];
+    routes=planRoundMovement(navigation[map.map.toLowerCase()],map.map,round,(roundIndex<12)===(map.ownStartsAttack!==false),players,tactic,options.mapMastery?.[map.map]??48);
+    q('.sim-tactic').textContent=`PLANO: ${tactic?.name??'Distribuição automática'}`;
+    rows.forEach((row,id)=>{row.dataset.assignment=routes[id].assignment;row.title=`${players[id].alias} · ${routes[id].assignment}`;row.querySelector('.broadcast-assignment')!.textContent=routes[id].assignment});
   }
   function draw(now: number){
     const dt=Math.min((now-last)/1000,.1);last=now;
@@ -151,7 +190,7 @@ export function watchSeries(options: WatchOptions) {
       const death=round.events.find(e=>e.victim===i);
       const t=Math.min(elapsed,death?.time??elapsed);
       // All movement stays on cardinal grid edges, including at corners.
-      return pathPosition(nav,routes[i],t/2.8);
+      return tacticalPosition(nav,routes[i],t);
     });
     overlay.querySelectorAll<HTMLElement>('[data-mini-unit]').forEach((marker,id)=>{
       marker.style.left=`${positions[id].x}%`;marker.style.top=`${positions[id].y}%`;
@@ -161,7 +200,7 @@ export function watchSeries(options: WatchOptions) {
     rows.forEach((row,i)=>row.classList.toggle('dead',dead.has(i)));
     const headings=players.map((_,i)=>{
       if(dead.has(i))return {x:0,y:0};
-      const future=pathPosition(nav,routes[i],(elapsed+.08)/2.8);
+      const future=tacticalPosition(nav,routes[i],elapsed+.08);
       let heading={x:future.x-positions[i].x,y:future.y-positions[i].y};
       if(Math.hypot(heading.x,heading.y)<.001){
         const opponents=positions.map((point,id)=>({point,id})).filter(({id})=>(id<5)!==(i<5)&&!dead.has(id));
@@ -193,7 +232,7 @@ export function watchSeries(options: WatchOptions) {
     q('.spike-clock').textContent=planted?`${Math.max(0,(spike.explodeAt-elapsed)/REPLAY_TIME_SCALE).toFixed(1)}s`:planting?'PLANT':'—';
     const progress=defusing?(elapsed-spike.defuseStart!)/(round.resolveAt-spike.defuseStart!):planted?1-(elapsed-spike.plantAt)/(spike.explodeAt-spike.plantAt):planting?(elapsed-spike.plantStart)/(spike.plantAt-spike.plantStart):0;
     q('.spike-progress i').style.width=`${Math.max(0,Math.min(1,progress))*100}%`;
-    const anchor=spike?pathPosition(nav,routes[spike.planter],1):pathPosition(nav,routes[0],1);
+    const anchor=tacticalPosition(nav,routes[spike?.planter??0],Infinity);
     overlay.querySelectorAll<HTMLElement>('[data-plan-unit]').forEach((marker,id)=>{
       marker.style.left=`${positions[id].x}%`;marker.style.top=`${positions[id].y}%`;
       marker.classList.toggle('dead',dead.has(id));marker.classList.toggle('selected',id===selectedPlayer);
@@ -229,13 +268,14 @@ export function watchSeries(options: WatchOptions) {
       if(roundIndex===map.simulation.rounds.length){
         series[map.win?0:1]++;mapIndex++;roundIndex=0;score=[0,0];
         if(mapIndex===maps.length){finish();return;}
+        showLoading();void enterMap().catch(showLoadError);return;
       }
       startRound();
     }
     frame=requestAnimationFrame(draw);
   }
   Promise.all([
-    fetch('/assets/maps/navigation.json').then(response=>{
+    fetch('/assets/maps/navigation.json',{signal:AbortSignal.timeout(20000)}).then(response=>{
       if(!response.ok)throw new Error('Navigation unavailable');
       return response.json() as Promise<Record<string, Navigation>>;
     }),
@@ -248,14 +288,15 @@ export function watchSeries(options: WatchOptions) {
     renderer=view.renderer;
     await view.ready;
     if(finished)return;
-    startRound();
     q<HTMLButtonElement>('.sim-pause').disabled=false;
     for(const control of overlay.querySelectorAll<HTMLButtonElement | HTMLSelectElement | HTMLInputElement>('.sim-camera-tools button,.sim-camera-tools select,.sim-camera-tools input,[data-roster]'))control.disabled=false;
     updateCameraUI();
-    last=performance.now();frame=requestAnimationFrame(draw);
-  }).catch(()=>{
+    await enterMap();
+  }).catch(showLoadError);
+  function showLoadError(){
     if(finished)return;
     renderer?.destroy();renderer=null;
+    loading.querySelector<HTMLElement>('[role="status"]')!.textContent='Não foi possível carregar o mapa. Pule para ver o resultado.';
     q('.sim-status').textContent='Não foi possível carregar o campo. Recarregue a página ou pule para ver o resultado.';
-  });
+  }
 }

@@ -17,6 +17,12 @@ Os overalls, contratos, partidas e estatísticas da carreira são simulações. 
 
 ## Executar
 
+### Demo
+
+No menu inicial, escolha **Jogar demo**, ou abra `/?demo=1`. A demo oferece quatro semanas e quatro partidas, todos os menus livres, objetivos sugeridos por semana e balanço final. O save usa `tactical-demo-v1` e preserva a carreira normal. O jogador pode baixar um arquivo local de feedback ao concluir a campanha.
+
+O plano de progressão, os critérios de teste e o próximo ciclo de desenvolvimento estão em [docs/DEMO_PLAN.md](docs/DEMO_PLAN.md).
+
 Requer Node.js 22.18 ou superior e npm.
 
 ```bash

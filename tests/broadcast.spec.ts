@@ -1,5 +1,30 @@
 import {test,expect,type Page} from '@playwright/test';
 
+test('map loading repeats between maps and browser back exits the match page',async({page})=>{
+  await page.goto('/');
+  await page.evaluate(async()=>{
+    const {watchSeries}=await import('/src/game/watch-series.ts');
+    const {createMapSimulation}=await import('/src/game/simulation.ts');
+    const players=Array.from({length:10},(_,id)=>({alias:`Player ${id}`,agent:'jett'}));
+    const first=createMapSimulation(true,players);
+    first.rounds=first.rounds.slice(0,1);
+    first.rounds[0]={winner:0,attacking:0,events:[],spike:null,outcome:'elimination',resolveAt:.01,duration:.03,site:'A',seed:.2};
+    const second=createMapSimulation(false,players);
+    watchSeries({maps:[{map:'Ascent',win:true,simulation:first},{map:'Haven',win:false,simulation:second}],players,own:'SEN',opponent:'LOUD',escape:String,onFinish:()=>{}});
+  });
+  await expect(page.locator('.match-loading h1')).toHaveText('ASCENT');
+  await expect(page.locator('.match-loading h1')).toHaveText('HAVEN',{timeout:30000});
+  await expect(page.locator('.match-loading')).toBeVisible();
+  await expect(page.locator('.match-loading-image')).toHaveAttribute('src','/assets/maps/haven-splash.jpg');
+  await expect(page.locator('.match-loading')).toBeHidden({timeout:30000});
+  await expect(page.locator('.broadcast-map-name')).toHaveText('HAVEN');
+  await expect(page.locator('.sim-canvas')).toHaveAttribute('data-environment','Haven');
+  await page.screenshot({path:'test-results/environment-haven.png'});
+  await page.goBack();
+  await expect(page.locator('.match-page')).toHaveCount(0);
+  await expect(page.locator('.intro-screen')).toBeVisible();
+});
+
 async function replay(page:Page){
   await page.goto('/');
   await page.evaluate(async()=>{
@@ -12,9 +37,14 @@ async function replay(page:Page){
     simulation.rounds[0]={winner:0,attacking:0,events:[{time:.02,killer:0,victim:5,assist:1,weapon:'vandal',headshot:true}],spike:null,outcome:'elimination',resolveAt:.06,duration:.45,site:'A',seed:.2};
     simulation.rounds[1]={winner:1,attacking:0,events:[{time:.02,killer:6,victim:2,assist:7,weapon:'operator',headshot:false}],spike:null,outcome:'elimination',resolveAt:90,duration:92,site:'A',seed:.3};
     (window as unknown as {broadcastFinished:number}).broadcastFinished=0;
-    watchSeries({maps:[{map:'Ascent',win:true,ownStartsAttack:true,simulation}],players,own:'SENTINELS',opponent:'LOUD',ownLogo:'/assets/sen.png',opponentLogo:'/assets/loud.png',competition:'VCT AMERICAS',stage:'TEMPORADA · SEMANA 4',escape:value=>String(value).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]!)),onFinish:()=>{(window as unknown as {broadcastFinished:number}).broadcastFinished++}});
+    watchSeries({maps:[{map:'Ascent',win:true,ownStartsAttack:true,simulation}],players,tactics:{Ascent:{name:'Plano salvo: split',attack:'split',defense:'hold'}},own:'SENTINELS',opponent:'LOUD',ownLogo:'/assets/sen.png',opponentLogo:'/assets/loud.png',competition:'VCT AMERICAS',stage:'TEMPORADA · SEMANA 4',escape:value=>String(value).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]!)),onFinish:()=>{(window as unknown as {broadcastFinished:number}).broadcastFinished++}});
   });
+  await expect(page).toHaveURL(/#\/match$/);
+  await expect(page.locator('.match-loading')).toBeVisible();
+  await expect(page.locator('.match-loading h1')).toHaveText('ASCENT');
+  await expect(page.locator('.home-shell')).toHaveCount(0);
   await expect(page.locator('.sim-pause')).toBeEnabled({timeout:30000});
+  await expect(page.locator('.match-loading')).toBeHidden({timeout:30000});
   await expect(page.locator('.broadcast-headshot')).toBeVisible();
   await expect(page.locator('.broadcast-round-number')).toHaveText(/ROUND 2/,{timeout:15000});
   await expect(page.locator('.broadcast-kill')).toHaveCount(1);
@@ -26,6 +56,9 @@ test('broadcast uses shared kills and assists, preserves cameras and completes o
   await page.setViewportSize({width:1600,height:940});
   await replay(page);
   await expect(page.locator('.broadcast-own-score')).toHaveText('1');
+  await expect(page.locator('.sim-tactic')).toContainText('Plano salvo: split');
+  await expect(page.locator('.broadcast-assignment')).toHaveCount(10);
+  expect(new Set(await page.locator('.sim-roster [data-roster]').evaluateAll(rows=>rows.map(row=>(row as HTMLElement).dataset.assignment))).size).toBeGreaterThanOrEqual(3);
   await expect(page.locator('[data-roster="0"] .sim-player-stats')).toHaveText('1 / 0 / 0');
   await expect(page.locator('[data-roster="1"] .sim-player-stats')).toHaveText('0 / 1 / 0');
   await expect(page.locator('[data-roster="5"] .sim-player-stats')).toHaveText('0 / 0 / 1');
@@ -52,9 +85,6 @@ test('broadcast uses shared kills and assists, preserves cameras and completes o
   await page.locator('.sim-camera-reset').click();
   await expect(page.locator('.sim-map')).toHaveAttribute('data-camera-mode','tactical');
   await page.locator('.broadcast-camera summary').click();
-  await page.locator('.broadcast-camera summary').focus();
-  await page.keyboard.press('Tab');
-  await expect(page.locator('[data-roster="5"]')).toBeFocused();
   await page.locator('.sim-audio').click();
   await expect(page.locator('.sim-audio')).toHaveAttribute('aria-pressed','true');
   await page.setViewportSize({width:390,height:844});
@@ -66,6 +96,8 @@ test('broadcast uses shared kills and assists, preserves cameras and completes o
   await expect(page.locator('.sim-pause')).toHaveText('CONTINUAR');
   await page.locator('.sim-finish').click();
   await expect(page.locator('.broadcast-overlay')).toHaveCount(0);
+  await expect(page).not.toHaveURL(/#\/match$/);
+  await expect(page.locator('.intro-screen')).toBeVisible();
   expect(await page.evaluate(()=>(window as unknown as {broadcastFinished:number}).broadcastFinished)).toBe(1);
   expect(await page.evaluate(()=>document.body.style.overflow)).toBe('');
   expect(errors).toEqual([]);

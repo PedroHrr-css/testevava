@@ -9,7 +9,7 @@ export function dateKey(date:Date):string{return date.toISOString().slice(0,10)}
 export function calendarFixture(state:CareerState,teams:Team[],date:Date){
   const offset=Math.round((date.getTime()-careerDate(1).getTime())/86400000);
   const week=Math.floor(offset/7)+1;
-  if(offset<0||offset%7!==6||week>14||week>state.week)return null;
+  if(offset<0||offset%7!==6||week>(state.demo?4:14)||week>state.week)return null;
   const round=tournamentRound(week),result=state.tournamentResults?.find(item=>item.week===week);
   const access=tournamentAccess(state,round);
   if(!result&&(week<state.week||access==='declined'||access==='locked'))return null;

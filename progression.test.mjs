@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import {careerProgression,demoFinished} from './src/game/progression.ts';
+const base={demo:{version:1},week:1,players:Array.from({length:5},(_,id)=>({id:`p${id}`,rating:80,source:'sen'})),team:'sen',captain:'p0',tactics:[],activeTactics:{},scoutReports:{},trainingHistory:[],staff:[],tournamentResults:[]};
+assert.equal(careerProgression(base).recommended.view,'squad');
+assert.equal(careerProgression({...base,week:2}).recommended.view,'scouting');
+assert.equal(careerProgression({...base,week:3}).recommended.view,'market');
+assert.equal(careerProgression(base).total,4);
+const losses=Array.from({length:4},(_,index)=>({week:index+1,win:false}));
+assert.equal(demoFinished({...base,week:4,tournamentResults:losses}),true,'losses do not block demo completion');
+assert.equal(demoFinished({...base,week:4,tournamentResults:losses.slice(0,3)}),false);
+assert.equal(demoFinished({...base,demo:undefined,tournamentResults:losses}),false,'normal career continues after four matches');
+assert.equal(careerProgression({...base,demo:undefined}).total,14);
+console.log('Progression OK: weekly recommendations, four-match demo, normal career and loss handling');

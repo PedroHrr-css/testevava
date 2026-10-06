@@ -81,6 +81,10 @@ const SITES: Record<string, Record<string, PointTuple>>={
   Lotus:{A:[89,32],B:[47,43]},Sunset:{A:[80,38],B:[18,40]},
   Icebox:{A:[73,80],B:[59,22]}
 };
+export function sitePoint(nav:Navigation,map:string,site:'A'|'B'):Point {
+  const target=SITES[map]?.[site]??[site==='A'?30:70,site==='A'?30:55];
+  return cellPoint(nav,nearestCell(nav,...target));
+}
 export function roundPaths(nav: Navigation,map: string,round: Pick<Round, 'site' | 'seed'>,attacksOwn: boolean): number[][] {
   const spawns=SPAWNS[map]||[[50,90],[50,8]];
   const site=SITES[map]?.[round.site]||[round.site==='A'?30:70,round.site==='A'?30:55];
